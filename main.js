@@ -32,18 +32,45 @@ controller.setupWebserver(process.env.PORT || 3000, function(err, webserver){
     });
 });
 
-//verifica se o email é valido e confirma que recebeu com sucesso
+//verifica se o email é valido e confirma que recebeu com sucesso 
 controller.hears(['@'], 'direct_message,direct_mention', function(bot, message) {
+    //email de quem digita 
     var verificaUser = message.user;
     if(verificaUser.match(/@2s.com.br/) || verificaUser.match(/@webex.bot/)) {
+        //email digitado 
         var emailGuest = message.text;
-        //var data = new Date();
 
-        if(regexEmail.test(emailGuest)) {
-            console.log('### Chamando doRequest com o parametro -> ' + emailGuest);
-            doRequest(emailGuest);
-            bot.reply(message, "Prontinho...\n\nAgora é só acessar o SSID 2S_Guest e colocar os seguintes dados:\n\nUsuário: " + emailGuest + "\n\nSenha: 2S@Guest195\n\nBoa navegação!!");
+        if(regexEmail.test(emailGuest)) { 
+            console.log('### Chamando criaGuest com o parametro -> ' + emailGuest);
+            criaGuest(emailGuest);
+            /*var retornoIdUser = retornaId(emailGuest);
+            retornoIdUser = JSON.parse(retornoIdUser);
+            console.log('### ide retornado - > ' + retornoIdUser);
+            if(retornoIdUser == 'ERRO') {
+                bot.reply(message, "Ocorreu um erro ao tentar acessar o servidor!\n\nTente novamente mais tarde! :D");
+            } else {
 
+                if(retornoIdUser.length == 0) {
+                    for(var i = 0; i < 3; i++) {
+                        var retornoMetodo = retornaId(emailGuest);
+                        retornoMetodo = JSON.parse(retornoMetodo);
+                        if(retornoMetodo.length == 0) {
+                            
+                        } else {
+                            retornoIdUser = retornoMetodo;
+                            break;
+                        }
+                    }
+                }
+
+                if(retornoIdUser.length == 0) {
+                    bot.reply(message, "Ocorreu um erro ao tentar acessar o servidor!\n\nTente novamente mais tarde! :D");
+                }else {
+                    console.log('###### chamando servico do password');
+                    retornaPassword(retornoIdUser[0].id);*/
+                    bot.reply(message, "Prontinho...\n\nAgora é só acessar o SSID 2S_Guest e colocar os seguintes dados:\n\nUsuário: " + emailGuest + "\n\nSenha: 2S@Guest195\n\nBoa navegação!!");
+                /*}
+            }*/
         } else {
             if(verificaUser.match(/@webex.bot/)){
 
@@ -66,21 +93,21 @@ controller.hears(['Olá', 'Opa', 'Ola', 'Oi'], 'direct_message,direct_mention', 
     }
 });
 
-// pergunta o email
-controller.hears(['Sim', 'Eu quero', 'Quero', 'Desejo'], 'direct_message,direct_mention', function(bot, message) {
-    var verificaUser = message.user;
-    if(verificaUser.match(/@2s.com.br/) || verificaUser.match(/@webex.bot/)) {
-        bot.reply(message, "Entendido!\n\nPor favor digite apenas o e-mail do convidado.");
-    } else {
-        bot.reply(message, "Hey humano!\n\nVocê parece ser uma pessoa super legal, mas eu só estou autorizado a falar com o pessoal da 2S.\n\nDesculpe :/");
-    }
-});
-
 // recebe não como resposta e informa que não pode ajudar
 controller.hears(['Não', 'Agora não', 'Nao'], 'direct_message,direct_mention', function(bot, message) {
     var verificaUser = message.user;
     if(verificaUser.match(/@2s.com.br/) || verificaUser.match(/@webex.bot/)) {
         bot.reply(message, "Poxa :(\n\nEntão a hora que quiser pode me chamar!");
+    } else {
+        bot.reply(message, "Hey humano!\n\nVocê parece ser uma pessoa super legal, mas eu só estou autorizado a falar com o pessoal da 2S.\n\nDesculpe :/");
+    }
+});
+
+// pergunta o email
+controller.hears(['Sim', 'Eu quero', 'Quero', 'Desejo'], 'direct_message,direct_mention', function(bot, message) {
+    var verificaUser = message.user;
+    if(verificaUser.match(/@2s.com.br/) || verificaUser.match(/@webex.bot/)) {
+        bot.reply(message, "Entendido!\n\nPor favor digite apenas o e-mail do convidado.");
     } else {
         bot.reply(message, "Hey humano!\n\nVocê parece ser uma pessoa super legal, mas eu só estou autorizado a falar com o pessoal da 2S.\n\nDesculpe :/");
     }
@@ -96,7 +123,8 @@ controller.hears(['Obrigada', 'Obrigado', 'Valeu', 'Vlw', 'Thanks', 'Grato'], 'd
     }
 });
 
-function doRequest(userEmail){
+//Cria o guest com o e-mail que recebeu no teams
+function criaGuest(userEmail){
     var strfromDate = (data.getMonth() + 1) + '/' + data.getDate() + '/' + data.getFullYear() + ' ' + data.getHours() + ':' + data.getMinutes();
     var strtoDate = (data.getMonth() + 1) + '/' + (data.getDate() + 1) + '/' + data.getFullYear() + ' 23:00';
 
@@ -109,41 +137,105 @@ function doRequest(userEmail){
     'Content-Type': 'application/json' },
     body:
     { GuestUser: {
-        name: 'guest',
-        guestType: 'Guest Type (Wireless Setup - Beta)',
-        status: 'ACTIVE',
-        sponsorUserName: 'sponsor-api',
-        guestInfo:
-        { userName: userEmail,
-        firstName: '',
-        lastName: '',
-        emailAddress: userEmail,
-        password: '2S@Guest195',
-        creationTime: '',
-        enabled: true,
-        notificationLanguage: 'English',
-        smsServiceProvider: 'Global Default' },
-        guestAccessInfo: {
-            validDays: 2,
-            fromDate: strfromDate,
-            toDate: strtoDate,
-            location: 'San Jose' },
-            portalId: 'bcd76bc2-8a3e-11e8-84e7-005056a65ea2',
-            customFields: {}, 
-            } 
-        },
-    json: true 
-};
+            name: 'guest',
+            guestType: 'Guest Type (Wireless Setup - Beta)',
+            status: 'ACTIVE',
+            sponsorUserName: 'sponsor-api',
+            guestInfo: {
+                userName: userEmail,
+                firstName: '',
+                lastName: '',
+                emailAddress: userEmail,
+                password: '2S@Guest195',
+                creationTime: '',
+                enabled: true,
+                notificationLanguage: 'English',
+                smsServiceProvider: 'Global Default' },
+                    guestAccessInfo: {
+                        validDays: 2,
+                        fromDate: strfromDate,
+                        toDate: strtoDate,
+                        location: 'San Jose' },
+                        portalId: 'bcd76bc2-8a3e-11e8-84e7-005056a65ea2',
+                        customFields: {}, 
+                    } 
+            },
+        json: true 
+    };
 
     request(options, function (error, response, body) {
     
-    if (error) {
-        console.log('### Error -> ' + error);
-        throw new Error(error);
-    }
-        console.log('### Body -> ' + JSON.stringify(body));
+        if (error) {
+            console.log('### Error -> ' + error);
+            throw new Error(error);
+        }
+            console.log('### Body -> ' + JSON.stringify(body));
+            response = body;  // -------- novo
 
-    });
+            return body;  // -------- novo 
+        }
+    );
+    
+}
+
+////////////////////////////////////////////////////////////////////////////
+//retorna o id do usuário guest criado
+function retornaId(userEmail){
+    var retorno;
+    var options = { method: 'GET',
+    url: 'https://10.3.161.171:9060/ers/config/guestuser?filter=name.CONTAINS.' + userEmail,
+    headers:
+    { Authorization: 'Basic c3BvbnNvci11c2VyOlBAc3N3MHJk',
+    'ERS-Media-Type': 'identity.guestuser.2.0',
+    Accept: 'application/json',
+    'Content-Type': 'application/json' },
+    };
+
+    request(options, function (error, response, body) {
+            body = JSON.parse(body);
+            console.log('###### body ' + JSON.stringify(body));
+            if (error) {
+                console.log('### Error ID -> ' + error);
+                retorno = 'ERRO';
+            } else {
+                retorno = body.SearchResult.resources;
+                /*if(body.SearchResult.resources.length > 0) {
+                    retorno = body.SearchResult.resources[0].id;
+                } else {
+                    // Tratar
+                }*/
+            }
+        }
+    );
+    console.log('###### retornando id do user' + body.SearchResult.resources);
+    return retorno;
+}
+
+//retorna a senha do usuário guest criado
+function retornaPassword(userId){
+    console.log('### retorna password');
+    var options = { method: 'GET',
+    url: 'https://10.3.161.171:9060/ers/config/guestuser/' + userId,
+    headers:
+    { Authorization: 'Basic c3BvbnNvci11c2VyOlBAc3N3MHJk',
+    'ERS-Media-Type': 'identity.guestuser.2.0',
+    Accept: 'application/json',
+    'Content-Type': 'application/json' },
+    };
+
+    request(options, function (error, response, body) {
+
+        console.log('****** error -> ' + error);
+        console.log('****** response -> ' + JSON.stringify(response));
+        console.log('****** body -> ' + JSON.stringify(body));
+    
+        if (error) {
+            console.log('### Error ID -> ' + error);
+            throw new Error(error);
+        }
+            console.log('### Body ID -> ' + JSON.stringify(body));
+        }
+    );
 }
 
 
@@ -182,5 +274,5 @@ controller.hears(['Marcelão'], 'direct_message,direct_mention', function(bot, m
     bot.reply(message, "Isso é uma bichoooooooooona");
 });
 
-//ACCESS_TOKEN=YTFhZjcwMGEtOWY5Yi00ZTFmLWJiMTEtYmI5YWZjNWNkNDIxNzdlMmE2MzktZmQz PUBLIC_URL= http://060d46af.ngrok.io node main.js
- 
+//ACCESS_TOKEN=YTFhZjcwMGEtOWY5Yi00ZTFmLWJiMTEtYmI5YWZjNWNkNDIxNzdlMmE2MzktZmQz PUBLIC_URL=http://47ea43ff.ngrok.io node main.js
+   
