@@ -63,6 +63,55 @@ controller.hears(['Menu'], 'direct_message,direct_mention', function (bot, messa
     }
 });
 
+//pega o numero de cafés e água e já envia para o grupo da Mari
+controller.hears(['Café', 'Água', 'Cafe', 'Agua'], 'direct_message,direct_mention', function (bot, message) {
+    var verificaUser = message.user;
+    var pedido = message.text;
+    if (globalID == 2) {
+        if (verificaUser.match(/@2s.com.br/) || verificaUser.match(/@webex.bot/)) {
+            if (verificaUser.match(/@webex.bot/)) {
+                //não faz nada
+            } else {
+
+                var options = {
+                    method: 'POST',
+                    url: 'https://api.ciscospark.com/v1/messages',
+                    headers:
+                    {
+                        Authorization: 'Bearer ZGY2ZjVlMGQtZmJiZi00MzliLWFhMjEtYjEwYzgzOTlkYzIwZGQ3NDQzODEtNWUz',
+                        'Content-Type': 'application/json'
+                    },
+                    body:
+                    {
+                        "roomId": "Y2lzY29zcGFyazovL3VzL1JPT00vMjVjN2JlZDAtYTQ5NS0xMWU4LTk1M2MtZDVhMDQzODlmMWM0",
+                        "text": "Chegou um pedido de café/água!\n\nSolicitante: " + verificaUser + "\n\nPedido: " + pedido + "\n"
+
+                    },
+                    json: true
+                };
+
+                request(options, function (error, response, body) {
+                    if (error) {
+                        console.log('### Error API Dólar -> ' + error);
+                    } else {
+                        console.log('############ response -> ' + response.statusCode);
+                    }
+                });
+
+                bot.reply(message, "Prontinho, seu pedido foi enviado para o espaço Cafezinho 2S");
+            }
+        } else {
+            bot.reply(message, "Hey humano!\n\nVocê parece ser uma pessoa super legal, mas eu só estou autorizado a falar com o pessoal da 2S.\n\nDesculpe :/");
+        }
+    } else {
+        if (verificaUser.match(/@webex.bot/)) {
+            //faz nada
+        } else {
+            bot.reply(message, "Parece que você não selecionou o que deseja no menu, por favor informe o número");
+        }
+    }
+});
+
 
 //verifica se o email é valido e confirma que recebeu com sucesso 
 controller.hears(['@'], 'direct_message,direct_mention', function (bot, message) {
@@ -90,7 +139,7 @@ controller.hears(['@'], 'direct_message,direct_mention', function (bot, message)
 
                         console.log('########## Code ' + code);
                         if (code == 201) {
-                            bot.reply(message, "Prontinho...\n\nAgora é só acessar o SSID 2S_Guest e colocar os seguintes dados:\n\nUsuário: " + emailGuest + "\n\nSenha: " + senhaCriada + "\n\nBoa navegação!!");
+                            bot.reply(message, "Prontinho...\n\nAgora é só acessar o SSID 2S_Guest e colocar os seguintes dados:\n\nUsuário: " + emailGuest + "\n\nSenha: " + senhaCriada + "\n\nBoa navegação!!\n\n*-- O acesso dura 2 dias a partir do primeiro login --*");
                         } else {
                             bot.reply(message, "Xí, parece que alguma coisa deu errado.\n\nPor favor avise a Bruna.");
                         }
@@ -116,8 +165,8 @@ controller.hears(['@'], 'direct_message,direct_mention', function (bot, message)
 
 // recebe não como resposta e informa que não pode ajudar
 controller.hears(['Não', 'Agora não', 'Nao'], 'direct_message,direct_mention', function (bot, message) {
+    var verificaUser = message.user;
     if (globalID == 1) {
-        var verificaUser = message.user;
         if (verificaUser.match(/@2s.com.br/) || verificaUser.match(/@webex.bot/)) {
             if (verificaUser.match(/@webex.bot/)) {
                 //bot não faz nada mas reconhece que o não veio dele mesmo
@@ -135,18 +184,6 @@ controller.hears(['Não', 'Agora não', 'Nao'], 'direct_message,direct_mention',
         }
     }
 });
-
-/*
-// pergunta o email
-controller.hears(['Sim', 'Eu quero', 'Quero', 'Desejo'], 'direct_message,direct_mention', function (bot, message) {
-    var verificaUser = message.user;
-    if (verificaUser.match(/@2s.com.br/) || verificaUser.match(/@webex.bot/)) {
-        bot.reply(message, "Entendido!\n\nPor favor digite apenas o e-mail do convidado.");
-    } else {
-        bot.reply(message, "Hey humano!\n\nVocê parece ser uma pessoa super legal, mas eu só estou autorizado a falar com o pessoal da 2S.\n\nDesculpe :/");
-    }
-});
-*/
 
 // Responde a agradecimentos 
 controller.hears(['Obrigada', 'Obrigado', 'Valeu', 'Vlw', 'Thanks', 'Grato'], 'direct_message,direct_mention', function (bot, message) {
@@ -219,25 +256,27 @@ function criaGuest(userEmail, userSenha, callback) {
 
 //faz o GET na API da moeda
 function pegarDolar(callback) {
-    var dolar;
-    var options = {
-        method: 'GET',
-        url: 'http://economia.awesomeapi.com.br/json/USD-BRL/1/1', 
-    };
+    if (globalID == 3) {
 
-    request(options, function (error, response, body) {
-        body = JSON.parse(body);
-        console.log('###### Body Moeda -> ' + JSON.stringify(body));
+        var dolar;
+        var options = {
+            method: 'GET',
+            url: 'http://economia.awesomeapi.com.br/json/USD-BRL/1/1',
+        };
 
-        if (error) {
-            console.log('### Error API Dólar -> ' + error);
-        } else {
-            dolar = body[0].ask;
-            callback(dolar);
-        }
-    });
+        request(options, function (error, response, body) {
+            body = JSON.parse(body);
+            console.log('###### Body Moeda -> ' + JSON.stringify(body));
+
+            if (error) {
+                console.log('### Error API Dólar -> ' + error);
+            } else {
+                dolar = body[0].ask;
+                callback(dolar);
+            }
+        });
+    }
 }
-
 function retornaId(userEmail) {
     var idFinal;
     var idRetornado;
@@ -312,32 +351,37 @@ controller.hears(['Marcelão'], 'direct_message,direct_mention', function (bot, 
 controller.hears(['.*'], 'direct_message,direct_mention', function (bot, message) {
     botOuviu = message.text;
 
-    switch (botOuviu) {
+    var verificaUser = message.user;
+    if (verificaUser.match(/@2s.com.br/) || verificaUser.match(/@webex.bot/)) {
 
-        //para criar o guest opção 1 do menu
-        case '1':
-            console.log('########## ouvi 1 -> Criar Guest');
-            globalID = 1;
-            bot.reply(message, "Por favor digite apenas o e-mail do convidado.");
-            break;
+        switch (botOuviu) {
 
-        case '2':
-            console.log('########## ouvi 2 -> Pedir Café');
-            globalID = 2;
-            bot.reply(message, "Por favor informe a sala onde você está e quantos cafés/águas deseja.");
-            break;
+            //para criar o guest opção 1 do menu
+            case '1':
+                console.log('########## ouvi 1 -> Criar Guest');
+                globalID = 1;
+                bot.reply(message, "Por favor digite apenas o e-mail do convidado.");
+                break;
 
-        case '3':
-            console.log('########## ouvi 3 -> Cotação Dóloar');
-            globalID = 3;
-            pegarDolar(function (valorDolar) {
-                bot.reply(message, "O valor do dólar comercial nesse momento é de R$ " + Math.round(valorDolar * 100) / 100);
-            });
-            break;
+            case '2':
+                console.log('########## ouvi 2 -> Pedir Café');
+                globalID = 2;
+                bot.reply(message, "Me passe as seguintes informações por favor:\n- Onde você está?\n- É uma reunião com clientes ou uma reunião interna?\n- Quantos cafés e/ou águas deseja?\n\nPreciso das respostas em uma frase única, exemplo: *Estou na sala do Carneiro com clientes e preciso de 2 cafés e 1 água*");
+                break;
+
+            case '3':
+                console.log('########## ouvi 3 -> Cotação Dólar');
+                globalID = 3;
+                pegarDolar(function (valorDolar) {
+                    bot.reply(message, "O valor do dólar comercial nesse momento é de R$ " + Math.round(valorDolar * 100) / 100);
+                    bot.reply(message, "*Essa cotação é informativa. Para uso em propostas comerciais e assuntos oficiais da 2S entre em contato com nosso time financeiro*");
+                });
+                break;
+        }
+    } else {
+        bot.reply(message, "Hey humano!\n\nVocê parece ser uma pessoa super legal, mas eu só estou autorizado a falar com o pessoal da 2S.\n\nDesculpe :/");
     }
 });
 
 
-//ACCESS_TOKEN=ZGY2ZjVlMGQtZmJiZi00MzliLWFhMjEtYjEwYzgzOTlkYzIwZGQ3NDQzODEtNWUz PUBLIC_URL=http://e3022f27.ngrok.io node main.js
-
-// id meu NGI4YzllYmQtYWJmNS00MjEyLWFiYWMtODU5YmJjMGNhZGI0ZTI2Y2JmNDctZGUw
+//ACCESS_TOKEN=ZGY2ZjVlMGQtZmJiZi00MzliLWFhMjEtYjEwYzgzOTlkYzIwZGQ3NDQzODEtNWUz PUBLIC_URL=http://81e8f92e.ngrok.io node main.js
