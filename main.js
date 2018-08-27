@@ -5,6 +5,12 @@ var regexEmail = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@
 var data = new Date();
 var botOuviu;
 var globalID;
+var localPedido;
+var tipoPessoaPedido;
+var qtdCafePedido = 0;
+var qtdAguaPedido = 0;
+var auxPedido = 0
+var frasePedido;
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
 
@@ -38,6 +44,8 @@ controller.setupWebserver(process.env.PORT || 3000, function (err, webserver) {
 
 //comando para dar olá e mostrar o menu
 controller.hears(['Olá', 'Opa', 'Ola', 'Oi', 'Salve'], 'direct_message,direct_mention', function (bot, message) {
+    auxPedido = 0;
+    globalID = 0;
     var verificaUser = message.user;
     if (verificaUser.match(/@2s.com.br/) || verificaUser.match(/@webex.bot/)) {
         if (verificaUser.match(/@webex.bot/)) {
@@ -51,6 +59,8 @@ controller.hears(['Olá', 'Opa', 'Ola', 'Oi', 'Salve'], 'direct_message,direct_m
 });
 
 controller.hears(['Menu'], 'direct_message,direct_mention', function (bot, message) {
+    auxPedido = 0;
+    globalID = 0;
     var verificaUser = message.user;
     if (verificaUser.match(/@2s.com.br/) || verificaUser.match(/@webex.bot/)) {
         if (verificaUser.match(/@webex.bot/)) {
@@ -62,56 +72,6 @@ controller.hears(['Menu'], 'direct_message,direct_mention', function (bot, messa
         bot.reply(message, "Hey humano!\n\nVocê parece ser uma pessoa super legal, mas eu só estou autorizado a falar com o pessoal da 2S.\n\nDesculpe :/");
     }
 });
-
-//pega o numero de cafés e água e já envia para o grupo da Mari
-controller.hears(['Café', 'Água', 'Cafe', 'Agua'], 'direct_message,direct_mention', function (bot, message) {
-    var verificaUser = message.user;
-    var pedido = message.text;
-    if (globalID == 2) {
-        if (verificaUser.match(/@2s.com.br/) || verificaUser.match(/@webex.bot/)) {
-            if (verificaUser.match(/@webex.bot/)) {
-                //não faz nada
-            } else {
-
-                var options = {
-                    method: 'POST',
-                    url: 'https://api.ciscospark.com/v1/messages',
-                    headers:
-                    {
-                        Authorization: 'Bearer ZGY2ZjVlMGQtZmJiZi00MzliLWFhMjEtYjEwYzgzOTlkYzIwZGQ3NDQzODEtNWUz',
-                        'Content-Type': 'application/json'
-                    },
-                    body:
-                    {
-                        "roomId": "Y2lzY29zcGFyazovL3VzL1JPT00vMjVjN2JlZDAtYTQ5NS0xMWU4LTk1M2MtZDVhMDQzODlmMWM0",
-                        "text": "Chegou um pedido de café/água!\n\nSolicitante: " + verificaUser + "\n\nPedido: " + pedido + "\n"
-
-                    },
-                    json: true
-                };
-
-                request(options, function (error, response, body) {
-                    if (error) {
-                        console.log('### Error API Dólar -> ' + error);
-                    } else {
-                        console.log('############ response -> ' + response.statusCode);
-                    }
-                });
-
-                bot.reply(message, "Prontinho, seu pedido foi enviado para o espaço Cafezinho 2S");
-            }
-        } else {
-            bot.reply(message, "Hey humano!\n\nVocê parece ser uma pessoa super legal, mas eu só estou autorizado a falar com o pessoal da 2S.\n\nDesculpe :/");
-        }
-    } else {
-        if (verificaUser.match(/@webex.bot/)) {
-            //faz nada
-        } else {
-            bot.reply(message, "Parece que você não selecionou o que deseja no menu, por favor informe o número");
-        }
-    }
-});
-
 
 //verifica se o email é valido e confirma que recebeu com sucesso 
 controller.hears(['@'], 'direct_message,direct_mention', function (bot, message) {
@@ -135,7 +95,7 @@ controller.hears(['@'], 'direct_message,direct_mention', function (bot, message)
                     senhaCriada = gerarSenha();
 
                     //chama a função para criar o guest
-                    criaGuest(emailGuest, senhaCriada, function (code) {
+                    criaGuest(verificaUser, emailGuest, senhaCriada, function (code) {
 
                         console.log('########## Code ' + code);
                         if (code == 201) {
@@ -158,10 +118,61 @@ controller.hears(['@'], 'direct_message,direct_mention', function (bot, message)
             bot.reply(message, "Hey humano!\n\nVocê parece ser uma pessoa super legal, mas eu só estou autorizado a falar com o pessoal da 2S.\n\nDesculpe :/");
         }
     } else {
-        bot.reply(message, "Parece que você não selecionou o que deseja no menu, por favor informe o número");
+        if (verificaUser.match(/@webex.bot/)) {
+            //faz nada
+        } else {
+            bot.reply(message, "Parece que você não selecionou o que deseja no menu, por favor informe o número");
+        }
     }
 });
 
+//pega o local da reunião e guarda na variável localPedido 
+controller.hears(['sala', 'lounge', 'JP', 'Carneiro', 'Reuniões', 'Monaco', 'Pedro'], 'direct_message,direct_mention', function (bot, message) {
+    var verificaUser = message.user;
+    if (globalID == 2) {
+        if (verificaUser.match(/@2s.com.br/) || verificaUser.match(/@webex.bot/)) {
+            if (verificaUser.match(/@webex.bot/)) {
+                //não faz nada
+            } else {
+                auxPedido = 11;
+                localPedido = message.text;
+                bot.reply(message, "É uma reunião interna ou com cliente? *Responda apenas 'interna' ou 'cliente' por favor*");
+            }
+        } else {
+            bot.reply(message, "Hey humano!\n\nVocê parece ser uma pessoa super legal, mas eu só estou autorizado a falar com o pessoal da 2S.\n\nDesculpe :/");
+        }
+    } else {
+        if (verificaUser.match(/@webex.bot/)) {
+            //faz nada
+        } else {
+            bot.reply(message, "Parece que você não selecionou o que deseja no menu, por favor informe o número");
+        }
+    }
+});
+
+//pega o tipo de convidado da reunião e guarda na variável tipoPessoaPedido
+controller.hears(['interna', 'interno', 'cliente'], 'direct_message,direct_mention', function (bot, message) {
+    var verificaUser = message.user;
+    if (globalID == 2 && auxPedido == 11) {
+        if (verificaUser.match(/@2s.com.br/) || verificaUser.match(/@webex.bot/)) {
+            if (verificaUser.match(/@webex.bot/)) {
+                //não faz nada
+            } else {
+                auxPedido = 12;
+                tipoPessoaPedido = message.text;
+                bot.reply(message, "Quantos cafés deseja? *Responda apenas o número por favor, caso não precise, digite 0*");
+            }
+        } else {
+            bot.reply(message, "Hey humano!\n\nVocê parece ser uma pessoa super legal, mas eu só estou autorizado a falar com o pessoal da 2S.\n\nDesculpe :/");
+        }
+    } else {
+        if (verificaUser.match(/@webex.bot/)) {
+            //faz nada
+        } else {
+            bot.reply(message, "Parece que você não selecionou o que deseja no menu, por favor informe o número");
+        }
+    }
+});
 
 // recebe não como resposta e informa que não pode ajudar
 controller.hears(['Não', 'Agora não', 'Nao'], 'direct_message,direct_mention', function (bot, message) {
@@ -172,6 +183,67 @@ controller.hears(['Não', 'Agora não', 'Nao'], 'direct_message,direct_mention',
                 //bot não faz nada mas reconhece que o não veio dele mesmo
             } else {
                 bot.reply(message, "Poxa :(\n\nEntão a hora que quiser pode me chamar!");
+            }
+        } else {
+            bot.reply(message, "Hey humano!\n\nVocê parece ser uma pessoa super legal, mas eu só estou autorizado a falar com o pessoal da 2S.\n\nDesculpe :/");
+        }
+    } if (globalID == 2) {
+        if (verificaUser.match(/@2s.com.br/) || verificaUser.match(/@webex.bot/)) {
+            if (verificaUser.match(/@webex.bot/)) {
+                //faz nada
+            } else {
+                bot.reply(message, "Então vamos voltar e começar de novo, digite 'menu'");
+            }
+        } else {
+            bot.reply(message, "Hey humano!\n\nVocê parece ser uma pessoa super legal, mas eu só estou autorizado a falar com o pessoal da 2S.\n\nDesculpe :/");
+        }
+    }
+    
+    else {
+        if (verificaUser.match(/@webex.bot/)) {
+            // faz nada
+        } else {
+            bot.reply(message, "Parece que você não selecionou o que deseja no menu, por favor informe o número");
+        }
+    }
+});
+
+// recebe sim como resposta 
+controller.hears(['Sim', 'Confirmo'], 'direct_message,direct_mention', function (bot, message) {
+    var verificaUser = message.user;
+    if (globalID == 2) {
+        if (verificaUser.match(/@2s.com.br/) || verificaUser.match(/@webex.bot/)) {
+            if (verificaUser.match(/@webex.bot/)) {
+                //faz nada
+            } else {
+
+                var options = {
+                    method: 'POST',
+                    url: 'https://api.ciscospark.com/v1/messages',
+                    headers:
+                    {
+                        Authorization: 'Bearer ZGY2ZjVlMGQtZmJiZi00MzliLWFhMjEtYjEwYzgzOTlkYzIwZGQ3NDQzODEtNWUz',
+                        'Content-Type': 'application/json'
+                    },
+                    body:
+                    {
+                        "roomId": "Y2lzY29zcGFyazovL3VzL1JPT00vZTBlODk2ZTAtYTYxYS0xMWU4LTllOGEtYzdiZjgxNGU5MGUx",
+                        "text": "Chegou um pedido de café/água!\nSolicitante: " + verificaUser + "\nPedido:\n" + frasePedido
+
+                    },
+                    json: true
+                };
+
+                request(options, function (error, response, body) {
+                    if (error) {
+                        console.log('### Error API Dólar -> ' + error);
+                    } else {
+                        console.log('############ response -> ' + response.statusCode);
+                    }
+                });
+
+                bot.reply(message, "Prontinho, seu pedido foi enviado para o espaço Cafezinho 2S");
+                auxPedido = 0;
             }
         } else {
             bot.reply(message, "Hey humano!\n\nVocê parece ser uma pessoa super legal, mas eu só estou autorizado a falar com o pessoal da 2S.\n\nDesculpe :/");
@@ -196,7 +268,7 @@ controller.hears(['Obrigada', 'Obrigado', 'Valeu', 'Vlw', 'Thanks', 'Grato'], 'd
 });
 
 //Cria o guest com o e-mail que recebeu no teams
-function criaGuest(userEmail, userSenha, callback) {
+function criaGuest(pessoaVisitada, userEmail, userSenha, callback) {
     var diaAMais = new Date();
     diaAMais.setDate(diaAMais.getDate() + 1);
 
@@ -237,6 +309,7 @@ function criaGuest(userEmail, userSenha, callback) {
                     toDate: strtoDate,
                     location: 'San Jose'
                 },
+                personBeingVisited: pessoaVisitada,
                 portalId: 'bcd76bc2-8a3e-11e8-84e7-005056a65ea2',
                 customFields: {},
             }
@@ -246,7 +319,7 @@ function criaGuest(userEmail, userSenha, callback) {
 
     request(options, function (error, response, body) {
 
-        if (error) {
+        if (response.statusCode >= 400) {
             console.log('### Error Create -> ' + error);
         }
         callback(response.statusCode);
@@ -277,6 +350,7 @@ function pegarDolar(callback) {
         });
     }
 }
+
 function retornaId(userEmail) {
     var idFinal;
     var idRetornado;
@@ -353,35 +427,55 @@ controller.hears(['.*'], 'direct_message,direct_mention', function (bot, message
 
     var verificaUser = message.user;
     if (verificaUser.match(/@2s.com.br/) || verificaUser.match(/@webex.bot/)) {
+        if (verificaUser.match(/@webex.bot/)) {
+            //faz nada
+        } else {
+            if (auxPedido > 0) {
+                switch (auxPedido) {
 
-        switch (botOuviu) {
+                    //cases do questionário do café/água
+                    case auxPedido = 12:
+                        qtdCafePedido = message.text;
+                        auxPedido = 13;
+                        bot.reply(message, "Quantas águas deseja? *Responda apenas o número por favor, caso não precise, digite 0*");
+                        break;
 
-            //para criar o guest opção 1 do menu
-            case '1':
-                console.log('########## ouvi 1 -> Criar Guest');
-                globalID = 1;
-                bot.reply(message, "Por favor digite apenas o e-mail do convidado.");
-                break;
+                    case auxPedido = 13:
+                        qtdAguaPedido = message.text;
+                        frasePedido = "      - Local: " + localPedido + "\n      - Tipo de reunião: " + tipoPessoaPedido + "\n      - Cafés: " + qtdCafePedido + "\n      - Águas: " + qtdAguaPedido
+                        bot.reply(message, "Revise seu pedido:\n\n- Local: " + localPedido + "\n- Tipo de reunião: " + tipoPessoaPedido + "\n- Cafés: " + qtdCafePedido + "\n- Águas: " + qtdAguaPedido + "\n\nVocê confirma o pedido? *[Sim/Não]*");
+                        break;
+                }
+            } else {
+                switch (botOuviu) {
 
-            case '2':
-                console.log('########## ouvi 2 -> Pedir Café');
-                globalID = 2;
-                bot.reply(message, "Me passe as seguintes informações por favor:\n- Onde você está?\n- É uma reunião com clientes ou uma reunião interna?\n- Quantos cafés e/ou águas deseja?\n\nPreciso das respostas em uma frase única, exemplo: *Estou na sala do Carneiro com clientes e preciso de 2 cafés e 1 água*");
-                break;
+                    //cases do menu principal
+                    case '1':
+                        console.log('########## ouvi 1 -> Criar Guest');
+                        globalID = 1;
+                        bot.reply(message, "Por favor digite apenas o e-mail do convidado.");
+                        break;
 
-            case '3':
-                console.log('########## ouvi 3 -> Cotação Dólar');
-                globalID = 3;
-                pegarDolar(function (valorDolar) {
-                    bot.reply(message, "O valor do dólar comercial nesse momento é de R$ " + Math.round(valorDolar * 100) / 100);
-                    bot.reply(message, "*Essa cotação é informativa. Para uso em propostas comerciais e assuntos oficiais da 2S entre em contato com nosso time financeiro*");
-                });
-                break;
+                    case '2':
+                        console.log('########## ouvi 2 -> Pedir Café');
+                        globalID = 2;
+                        bot.reply(message, "Entendido, por favor responda o questionário a seguir: \n\n1) Onde você está? *Exemplo: sala do Carneiro, sala de reuniões, lounge...*");
+                        break;
+
+                    case '3':
+                        console.log('########## ouvi 3 -> Cotação Dólar');
+                        globalID = 3;
+                        pegarDolar(function (valorDolar) {
+                            bot.reply(message, "O valor do dólar comercial nesse momento é de R$ " + Math.round(valorDolar * 100) / 100);
+                            bot.reply(message, "*Essa cotação é informativa. Para uso em propostas comerciais e assuntos oficiais da 2S entre em contato com nosso time financeiro*");
+                        });
+                        break;
+                }
+            }
         }
     } else {
         bot.reply(message, "Hey humano!\n\nVocê parece ser uma pessoa super legal, mas eu só estou autorizado a falar com o pessoal da 2S.\n\nDesculpe :/");
     }
 });
 
-
-//ACCESS_TOKEN=ZGY2ZjVlMGQtZmJiZi00MzliLWFhMjEtYjEwYzgzOTlkYzIwZGQ3NDQzODEtNWUz PUBLIC_URL=http://81e8f92e.ngrok.io node main.js
+//ACCESS_TOKEN=ZGY2ZjVlMGQtZmJiZi00MzliLWFhMjEtYjEwYzgzOTlkYzIwZGQ3NDQzODEtNWUz PUBLIC_URL=http://8f42bb72.ngrok.io node main.js
