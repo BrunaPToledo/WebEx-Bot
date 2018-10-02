@@ -1,5 +1,6 @@
 var Botkit = require('botkit');
 var request = require("request");
+var _ = require("lodash");
 var accessToken = process.env.ACCESS_TOKEN;
 var regexEmail = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 var data = new Date();
@@ -10,9 +11,10 @@ var tipoPessoaPedido;
 var qtdCafePedido = 0;
 var qtdAguaPedido = 0;
 var auxPedido = 0
+var auxContato = 0;
+var auxContratoEoX = 0;
 var frasePedido;
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-
 
 if (!accessToken) {
     console.log("Deu ruim na chave de acesso");
@@ -38,39 +40,6 @@ controller.setupWebserver(process.env.PORT || 3000, function (err, webserver) {
     controller.createWebhookEndpoints(webserver, bot, function () {
         console.log("Webhook set up!");
     });
-});
-
-
-
-//comando para dar olá e mostrar o menu
-controller.hears(['Olá', 'Opa', 'Ola', 'Oi', 'Salve'], 'direct_message,direct_mention', function (bot, message) {
-    auxPedido = 0;
-    globalID = 0;
-    var verificaUser = message.user;
-    if (verificaUser.match(/@2s.com.br/) || verificaUser.match(/@webex.bot/)) {
-        if (verificaUser.match(/@webex.bot/)) {
-            //não faz nada
-        } else {
-            bot.reply(message, "Oi humano!\n\nPor favor digite o número correspondente ao que deseja :)\n\n1 - Criar acesso Guest Wi-Fi\n\n2 - Pedir um café para seus convidados\n\n3 - Consultar a cotação do dólar\n\n\n*-- Para ver o menu novamente, basta digitar 'menu' --*");
-        }
-    } else {
-        bot.reply(message, "Hey humano!\n\nVocê parece ser uma pessoa super legal, mas eu só estou autorizado a falar com o pessoal da 2S.\n\nDesculpe :/");
-    }
-});
-
-controller.hears(['Menu'], 'direct_message,direct_mention', function (bot, message) {
-    auxPedido = 0;
-    globalID = 0;
-    var verificaUser = message.user;
-    if (verificaUser.match(/@2s.com.br/) || verificaUser.match(/@webex.bot/)) {
-        if (verificaUser.match(/@webex.bot/)) {
-            //não faz nada
-        } else {
-            bot.reply(message, "Por favor digite o número correspondente ao que deseja :)\n\n1 - Criar acesso Guest Wi-Fi\n\n2 - Pedir um café para seus convidados\n\n3 - Consultar a cotação do dólar");
-        }
-    } else {
-        bot.reply(message, "Hey humano!\n\nVocê parece ser uma pessoa super legal, mas eu só estou autorizado a falar com o pessoal da 2S.\n\nDesculpe :/");
-    }
 });
 
 //verifica se o email é valido e confirma que recebeu com sucesso 
@@ -99,9 +68,11 @@ controller.hears(['@'], 'direct_message,direct_mention', function (bot, message)
 
                         console.log('########## Code ' + code);
                         if (code == 201) {
-                            bot.reply(message, "Prontinho...\n\nAgora é só acessar o SSID 2S_Guest e colocar os seguintes dados:\n\nUsuário: " + emailGuest + "\n\nSenha: " + senhaCriada + "\n\nBoa navegação!!\n\n*-- O acesso dura 2 dias a partir do primeiro login --*");
+                            console.log('Severino falou -> ' + "Prontinho...\n\nAgora é só acessar o SSID 2S_Guest e colocar os seguintes dados:\n\nUsuário: " + emailGuest + "\n\nSenha: " + senhaCriada + "\n\nBoa navegação!!\n\n*-- O acesso dura 1 dia --*");
+                            bot.reply(message, "Prontinho...\n\nAgora é só acessar o SSID 2S_Guest e colocar os seguintes dados:\n\nUsuário: " + emailGuest + "\n\nSenha: " + senhaCriada + "\n\nBoa navegação!!\n\n*-- O acesso dura 1 dia --*");
                         } else {
-                            bot.reply(message, "Xí, parece que alguma coisa deu errado.\n\nPor favor avise a Bruna.");
+                            console.log('Severino falou -> ' + "Xí, parece que alguma coisa deu errado no ISE.");
+                            bot.reply(message, "Xí, parece que alguma coisa deu errado no ISE.");
                         }
                     });
 
@@ -109,25 +80,104 @@ controller.hears(['@'], 'direct_message,direct_mention', function (bot, message)
                     if (verificaUser.match(/@webex.bot/)) {
                         //faz nada
                     } else {
-                        bot.reply(message, "E-mail inválido");
+                        console.log('Severino falou -> ' + "E-mail inválido.");
+                        bot.reply(message, "E-mail inválido.");
                     }
                 }
             }
         }
         else {
+            console.log('Severino falou -> ' + "Hey humano!\n\nVocê parece ser uma pessoa super legal, mas eu só estou autorizado a falar com o pessoal da 2S.\n\nDesculpe :/");
             bot.reply(message, "Hey humano!\n\nVocê parece ser uma pessoa super legal, mas eu só estou autorizado a falar com o pessoal da 2S.\n\nDesculpe :/");
         }
     } else {
         if (verificaUser.match(/@webex.bot/)) {
             //faz nada
         } else {
-            bot.reply(message, "Parece que você não selecionou o que deseja no menu, por favor informe o número");
+            console.log('Severino falou -> ' + "Parece que você não selecionou o que deseja no menu, por favor informe o número.");
+            bot.reply(message, "Parece que você não selecionou o que deseja no menu, por favor informe o número.");
         }
     }
 });
 
+//comando para dar olá e mostrar o menu
+controller.hears(['Olá', 'Opa', 'Ola', 'Oi', 'Salve'], 'direct_message,direct_mention', function (bot, message) {
+    var verificaUser = message.user;
+    if (verificaUser.match(/@2s.com.br/) || verificaUser.match(/@webex.bot/)) {
+        if (verificaUser.match(/@webex.bot/)) {
+            //não faz nada
+        } else if (auxContato == 21) {
+            var botOuviuLocal = message.text;
+            console.log('*** Nome digitado pelo usuário: ' + botOuviuLocal);
+            consultarContato(botOuviuLocal, function (contatoRetornado) {
+                console.log('Severino falou -> ' + contatoRetornado);
+                bot.reply(message, contatoRetornado);
+            });
+        } else if (auxContratoEoX == 32) {
+            var botOuviuLocal = message.text;
+            console.log('*** Part number digitado pelo usuário: ' + botOuviuLocal);
+            consultarEOX(botOuviuLocal, function (eoSaleInfo, eoSupInfo, linkInfo) {
+                if (eoSaleInfo.match(/Não há informações/)) {
+                    console.log('Severino falou -> ' + eoSaleInfo);
+                    bot.reply(message, eoSaleInfo);
+                } else if (eoSaleInfo.match(/inválido/)) {
+                    console.log('Severino falou -> ' + eoSaleInfo);
+                    bot.reply(message, eoSaleInfo);
+                } else {
+                    console.log('Severino falou -> ' + "* End-of Sale: " + eoSaleInfo + "\n\n* End-of-Support:  " + eoSupInfo + "\n\n* Link Referência: " + linkInfo);
+                    bot.reply(message, "* End-of Sale: " + eoSaleInfo + "\n\n* End-of-Support:  " + eoSupInfo + "\n\n* Link Referência: " + linkInfo);
+                }
+            });
+        } else if (auxContratoEoX == 33) {
+            var botOuviuLocal = message.text;
+            console.log('*** Serial number digitado pelo usuário: ' + botOuviuLocal);
+            consultarInfoContrato(botOuviuLocal, function (pnInfo, descricaoInfo, coberturaInfo, dataFinalInfo) {
+                if (pnInfo.match(/Não há informações/)) {
+                    console.log('Severino falou -> ' + pnInfo);
+                    bot.reply(message, pnInfo);
+                } else if (coberturaInfo.match(/Não/)) {
+                    console.log('Severino falou -> ' + "* Part number: " + pnInfo + "\n\n* Descrição: " + descricaoInfo + "\n\n* Está coberto? " + coberturaInfo);
+                    bot.reply(message, "* Part number: " + pnInfo + "\n\n* Descrição: " + descricaoInfo + "\n\n* Está coberto? " + coberturaInfo);
+                } else {
+                    console.log('Severino falou -> ' + "* Part number: " + pnInfo + "\n\n* Descrição: " + descricaoInfo + "\n\n* Está coberto? " + coberturaInfo + "\n\n* Último dia de cobertura: " + dataFinalInfo);
+                    bot.reply(message, "* Part number: " + pnInfo + "\n\n* Descrição: " + descricaoInfo + "\n\n* Está coberto? " + coberturaInfo + "\n\n* Último dia de cobertura: " + dataFinalInfo);
+                }
+            });
+        } else {
+            auxContato = 0;
+            auxPedido = 0;
+            auxContratoEoX = 0;
+            globalID = 0;
+            console.log('Severino falou -> ' + "Oi humano!\n\nPor favor digite o número correspondente ao que deseja :)\n\n1 - Criar acesso Guest Wi-Fi\n\n2 - Pedir um café para seus convidados\n\n3 - Consultar a cotação do dólar\n\n4 - Mostrar o endereço da VPN 2S\n\n5 - Consultar contato da 2S\n\n6 - Verificar coberturas e EoX\n\n\n*-- Para ver o menu novamente, basta digitar 'menu' --*");
+            bot.reply(message, "Oi humano!\n\nPor favor digite o número correspondente ao que deseja :)\n\n1 - Criar acesso Guest Wi-Fi\n\n2 - Pedir um café para seus convidados\n\n3 - Consultar a cotação do dólar\n\n4 - Mostrar o endereço da VPN 2S\n\n5 - Consultar contato da 2S\n\n6 - Verificar coberturas e EoX\n\n\n*-- Para ver o menu novamente, basta digitar 'menu' --*");
+        }
+    } else {
+        console.log('Severino falou -> ' + "Hey humano!\n\nVocê parece ser uma pessoa super legal, mas eu só estou autorizado a falar com o pessoal da 2S.\n\nDesculpe :/");
+        bot.reply(message, "Hey humano!\n\nVocê parece ser uma pessoa super legal, mas eu só estou autorizado a falar com o pessoal da 2S.\n\nDesculpe :/");
+    }
+});
+
+controller.hears(['Menu'], 'direct_message,direct_mention', function (bot, message) {
+    var verificaUser = message.user;
+    if (verificaUser.match(/@2s.com.br/) || verificaUser.match(/@webex.bot/)) {
+        if (verificaUser.match(/@webex.bot/)) {
+            //não faz nada
+        } else {
+            auxContato = 0;
+            auxPedido = 0;
+            auxContratoEoX = 0;
+            globalID = 0;
+            console.log('Severino falou -> ' + "Por favor digite o número correspondente ao que deseja :)\n\n1 - Criar acesso Guest Wi-Fi\n\n2 - Pedir um café para seus convidados\n\n3 - Consultar a cotação do dólar\n\n4 - Mostrar o endereço da VPN 2S\n\n5 - Consultar contato da 2S\n\n6 - Verificar coberturas e EoX");
+            bot.reply(message, "Por favor digite o número correspondente ao que deseja :)\n\n1 - Criar acesso Guest Wi-Fi\n\n2 - Pedir um café para seus convidados\n\n3 - Consultar a cotação do dólar\n\n4 - Mostrar o endereço da VPN 2S\n\n5 - Consultar contato da 2S\n\n6 - Verificar coberturas e EoX");
+        }
+    } else {
+        console.log('Severino falou -> ' + "Hey humano!\n\nVocê parece ser uma pessoa super legal, mas eu só estou autorizado a falar com o pessoal da 2S.\n\nDesculpe :/");
+        bot.reply(message, "Hey humano!\n\nVocê parece ser uma pessoa super legal, mas eu só estou autorizado a falar com o pessoal da 2S.\n\nDesculpe :/");
+    }
+});
+
 //pega o local da reunião e guarda na variável localPedido 
-controller.hears(['sala', 'lounge', 'JP', 'Carneiro', 'Reuniões', 'Monaco', 'Pedro'], 'direct_message,direct_mention', function (bot, message) {
+controller.hears(['sala', 'lounge', 'Reuniões'], 'direct_message,direct_mention', function (bot, message) {
     var verificaUser = message.user;
     if (globalID == 2) {
         if (verificaUser.match(/@2s.com.br/) || verificaUser.match(/@webex.bot/)) {
@@ -136,16 +186,19 @@ controller.hears(['sala', 'lounge', 'JP', 'Carneiro', 'Reuniões', 'Monaco', 'Pe
             } else {
                 auxPedido = 11;
                 localPedido = message.text;
-                bot.reply(message, "É uma reunião interna ou com cliente? *Responda apenas 'interna' ou 'cliente' por favor*");
+                console.log('Severino falou -> ' + "É uma reunião interna ou com cliente? *Responda apenas 'interna' ou 'cliente' por favor.*");
+                bot.reply(message, "É uma reunião interna ou com cliente? *Responda apenas 'interna' ou 'cliente' por favor.*");
             }
         } else {
+            console.log('Severino falou -> ' + "Hey humano!\n\nVocê parece ser uma pessoa super legal, mas eu só estou autorizado a falar com o pessoal da 2S.\n\nDesculpe :/");
             bot.reply(message, "Hey humano!\n\nVocê parece ser uma pessoa super legal, mas eu só estou autorizado a falar com o pessoal da 2S.\n\nDesculpe :/");
         }
     } else {
         if (verificaUser.match(/@webex.bot/)) {
             //faz nada
         } else {
-            bot.reply(message, "Parece que você não selecionou o que deseja no menu, por favor informe o número");
+            console.log('Severino falou -> ' + "Parece que você não selecionou o que deseja no menu, por favor informe o número.");
+            bot.reply(message, "Parece que você não selecionou o que deseja no menu, por favor informe o número.");
         }
     }
 });
@@ -160,16 +213,19 @@ controller.hears(['interna', 'interno', 'cliente'], 'direct_message,direct_menti
             } else {
                 auxPedido = 12;
                 tipoPessoaPedido = message.text;
-                bot.reply(message, "Quantos cafés deseja? *Responda apenas o número por favor, caso não precise, digite 0*");
+                console.log('Severino falou -> ' + "Quantos cafés deseja? *Responda com um número ou com um bule, caso não precise, digite 0.*");
+                bot.reply(message, "Quantos cafés deseja? *Responda com um número ou com um bule, caso não precise, digite 0.*");
             }
         } else {
+            console.log('Severino falou -> ' + "Hey humano!\n\nVocê parece ser uma pessoa super legal, mas eu só estou autorizado a falar com o pessoal da 2S.\n\nDesculpe :/");
             bot.reply(message, "Hey humano!\n\nVocê parece ser uma pessoa super legal, mas eu só estou autorizado a falar com o pessoal da 2S.\n\nDesculpe :/");
         }
     } else {
         if (verificaUser.match(/@webex.bot/)) {
             //faz nada
         } else {
-            bot.reply(message, "Parece que você não selecionou o que deseja no menu, por favor informe o número");
+            console.log('Severino falou -> ' + "Parece que você não selecionou o que deseja no menu, por favor informe o número.");
+            bot.reply(message, "Parece que você não selecionou o que deseja no menu, por favor informe o número.");
         }
     }
 });
@@ -182,9 +238,11 @@ controller.hears(['Não', 'Agora não', 'Nao'], 'direct_message,direct_mention',
             if (verificaUser.match(/@webex.bot/)) {
                 //bot não faz nada mas reconhece que o não veio dele mesmo
             } else {
+                console.log('Severino falou -> ' + "Poxa :(\n\nEntão a hora que quiser pode me chamar!");
                 bot.reply(message, "Poxa :(\n\nEntão a hora que quiser pode me chamar!");
             }
         } else {
+            console.log('Severino falou -> ' + "Hey humano!\n\nVocê parece ser uma pessoa super legal, mas eu só estou autorizado a falar com o pessoal da 2S.\n\nDesculpe :/");
             bot.reply(message, "Hey humano!\n\nVocê parece ser uma pessoa super legal, mas eu só estou autorizado a falar com o pessoal da 2S.\n\nDesculpe :/");
         }
     } if (globalID == 2) {
@@ -192,18 +250,21 @@ controller.hears(['Não', 'Agora não', 'Nao'], 'direct_message,direct_mention',
             if (verificaUser.match(/@webex.bot/)) {
                 //faz nada
             } else {
-                bot.reply(message, "Então vamos voltar e começar de novo, digite 'menu'");
+                console.log('Severino falou -> ' + "Então vamos voltar e começar de novo, digite 'menu'.");
+                bot.reply(message, "Então vamos voltar e começar de novo, digite 'menu'.");
             }
         } else {
+            console.log('Severino falou -> ' + "Hey humano!\n\nVocê parece ser uma pessoa super legal, mas eu só estou autorizado a falar com o pessoal da 2S.\n\nDesculpe :/");
             bot.reply(message, "Hey humano!\n\nVocê parece ser uma pessoa super legal, mas eu só estou autorizado a falar com o pessoal da 2S.\n\nDesculpe :/");
         }
     }
-    
+
     else {
         if (verificaUser.match(/@webex.bot/)) {
             // faz nada
         } else {
-            bot.reply(message, "Parece que você não selecionou o que deseja no menu, por favor informe o número");
+            console.log('Severino falou -> ' + "Parece que você não selecionou o que deseja no menu, por favor informe o número.");
+            bot.reply(message, "Parece que você não selecionou o que deseja no menu, por favor informe o número.");
         }
     }
 });
@@ -216,7 +277,8 @@ controller.hears(['Sim', 'Confirmo'], 'direct_message,direct_mention', function 
             if (verificaUser.match(/@webex.bot/)) {
                 //faz nada
             } else {
-
+                auxContato = 0;
+                auxContratoEoX = 0;
                 var options = {
                     method: 'POST',
                     url: 'https://api.ciscospark.com/v1/messages',
@@ -229,30 +291,32 @@ controller.hears(['Sim', 'Confirmo'], 'direct_message,direct_mention', function 
                     {
                         "roomId": "Y2lzY29zcGFyazovL3VzL1JPT00vZTBlODk2ZTAtYTYxYS0xMWU4LTllOGEtYzdiZjgxNGU5MGUx",
                         "text": "Chegou um pedido de café/água!\nSolicitante: " + verificaUser + "\nPedido:\n" + frasePedido
-
                     },
                     json: true
                 };
 
                 request(options, function (error, response, body) {
                     if (error) {
-                        console.log('### Error API Dólar -> ' + error);
+                        console.log('### Error Café -> ' + error);
                     } else {
                         console.log('############ response -> ' + response.statusCode);
                     }
                 });
 
-                bot.reply(message, "Prontinho, seu pedido foi enviado para o espaço Cafezinho 2S");
+                console.log('Severino falou -> ' + "Prontinho, seu pedido foi enviado para o espaço Cafezinho 2S!");
+                bot.reply(message, "Prontinho, seu pedido foi enviado para o espaço Cafezinho 2S!");
                 auxPedido = 0;
             }
         } else {
+            console.log('Severino falou -> ' + "Hey humano!\n\nVocê parece ser uma pessoa super legal, mas eu só estou autorizado a falar com o pessoal da 2S.\n\nDesculpe :/");
             bot.reply(message, "Hey humano!\n\nVocê parece ser uma pessoa super legal, mas eu só estou autorizado a falar com o pessoal da 2S.\n\nDesculpe :/");
         }
     } else {
         if (verificaUser.match(/@webex.bot/)) {
             // faz nada
         } else {
-            bot.reply(message, "Parece que você não selecionou o que deseja no menu, por favor informe o número");
+            console.log('Severino falou -> ' + "Parece que você não selecionou o que deseja no menu, por favor informe o número.");
+            bot.reply(message, "Parece que você não selecionou o que deseja no menu, por favor informe o número.");
         }
     }
 });
@@ -261,8 +325,14 @@ controller.hears(['Sim', 'Confirmo'], 'direct_message,direct_mention', function 
 controller.hears(['Obrigada', 'Obrigado', 'Valeu', 'Vlw', 'Thanks', 'Grato'], 'direct_message,direct_mention', function (bot, message) {
     var verificaUser = message.user;
     if (verificaUser.match(/@2s.com.br/) || verificaUser.match(/@webex.bot/)) {
+        globalID = 0;
+        auxContato = 0;
+        auxContratoEoX = 0;
+        auxPedido = 0;
+        console.log('Severino falou -> ' + "Estou aqui para ajudar :)");
         bot.reply(message, "Estou aqui para ajudar :)");
     } else {
+        console.log('Severino falou -> ' + "Hey humano!\n\nVocê parece ser uma pessoa super legal, mas eu só estou autorizado a falar com o pessoal da 2S.\n\nDesculpe :/");
         bot.reply(message, "Hey humano!\n\nVocê parece ser uma pessoa super legal, mas eu só estou autorizado a falar com o pessoal da 2S.\n\nDesculpe :/");
     }
 });
@@ -273,7 +343,8 @@ function criaGuest(pessoaVisitada, userEmail, userSenha, callback) {
     diaAMais.setDate(diaAMais.getDate() + 1);
 
     var strfromDate = (data.getMonth() + 1) + '/' + data.getDate() + '/' + data.getFullYear() + ' ' + data.getHours() + ':' + data.getMinutes();
-    var strtoDate = (diaAMais.getMonth() + 1) + '/' + (diaAMais.getDate()) + '/' + diaAMais.getFullYear() + ' ' + '23' + ':' + '00';
+    var strtoDate = (data.getMonth() + 1) + '/' + (data.getDate() + 1) + '/' + data.getFullYear() + ' 23:00';
+    //var strtoDate = (diaAMais.getMonth() + 1) + '/' + (diaAMais.getDate()) + '/' + diaAMais.getFullYear() + ' ' + '23' + ':' + '00';
 
     var options = {
         method: 'POST',
@@ -330,7 +401,6 @@ function criaGuest(pessoaVisitada, userEmail, userSenha, callback) {
 //faz o GET na API da moeda
 function pegarDolar(callback) {
     if (globalID == 3) {
-
         var dolar;
         var options = {
             method: 'GET',
@@ -351,47 +421,181 @@ function pegarDolar(callback) {
     }
 }
 
-function retornaId(userEmail) {
-    var idFinal;
-    var idRetornado;
-    var options = {
-        method: 'GET',
-        url: 'https://10.3.161.171:9060/ers/config/guestuser?filter=name.CONTAINS.' + userEmail,
-        headers:
-        {
-            Authorization: 'Basic c3BvbnNvci11c2VyOlBAc3N3MHJk',
-            'ERS-Media-Type': 'identity.guestuser.2.0',
-            Accept: 'application/json',
-            'Content-Type': 'application/json'
-        },
-    };
+//traz informações sobre o contato escolhido
+function consultarContato(nomeRecebido, callback) {
+    if (globalID == 5) {
+        var XLSX = require('xlsx');
+        var workbook = XLSX.readFile('Contatos2S.xlsx');
+        var sheet_name_list = workbook.SheetNames;
+        var listaCompleta = XLSX.utils.sheet_to_json(workbook.Sheets[sheet_name_list[0]]);
+        var resposta = '';
 
-    idFinal = request(options, function (error, response, body) {
-        body = JSON.parse(body);
-        console.log('###### Body ID ' + JSON.stringify(body));
+        auxContato = 0;
+        auxPedido = 0;
 
-        if (error) {
-            console.log('### Error ID -> ' + error);
-        } else {
-            if (body.SearchResult.resources.length > 0) {
-                idRetornado = body.SearchResult.resources[0].id;
+        //console.log(listaCompleta);
+        console.log('######### Nome que vai ser filtrado -> ' + nomeRecebido);
+
+        var itemfiltrado = _.filter(listaCompleta, function (item) {
+            var nomeItemFormatted = item.Nome.toUpperCase();
+            var nomeRecebidoFormatted = nomeRecebido.toUpperCase();
+
+            if (nomeItemFormatted.indexOf(nomeRecebidoFormatted) > -1) {
+                return item
             }
+        });
 
-            console.log('####### dentro do request -> ' + idRetornado);
-            return idRetornado;
-
+        if (itemfiltrado.length > 0) {
+            _.forEach(itemfiltrado, function (item) {
+                resposta += "- Nome: " + item.Nome + " - E-mail: " + item.email + " - Ramal: " + item.Ramal + " - Celular: " + item.Celular + " \n\n";
+            });
+        } else {
+            resposta = "Não encontrei nenhum registro desse nome :(\n\nDigite 'menu' para começar de novo.";
         }
+        callback(resposta);
     }
-    );
-    console.log('####### método retornaID -> ' + idFinal);
+}
+
+//gera o token para as chamadas da API Cisco
+function geraToken(callback) {
+    if (globalID == 6) {
+        auxContato = 0;
+        auxPedido = 0;
+        var token = ' ';
+        var options = {
+            method: 'POST',
+            url: 'https://cloudsso.cisco.com/as/token.oauth2 ',
+            headers:
+            {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Accept-Charset': 'UTF-8'
+            },
+            form:
+            {
+                grant_type: 'client_credentials',
+                client_secret: 'MaunFXsjMVrnPFCsT2QrZFHw',
+                client_id: '6ycg4qccm7tstfj4xqfd2j2s'
+            }
+        };
+
+        request(options, function (error, response, body) {
+            body = JSON.parse(body);
+            //console.log('###### Body Token -> ' + JSON.stringify(body));
+            if (error) {
+                console.log('###### Error API Token -> ' + error);
+            } else {
+                token = body.access_token;
+                callback(token);
+            }
+        });
+    }
+
+}
+
+//consulta sobre o end of sale e support dos equipamentos 
+function consultarEOX(pnRecebido, callback) {
+    if (globalID == 6) {
+        var tokenGerado = geraToken(function (tokenGerado) {
+            var eoSaleRetornado;
+            var eoSupRetornado;
+            var options = {
+                method: 'GET',
+                url: 'https://api.cisco.com/supporttools/eox/rest/5/EOXByProductID/' + pnRecebido,
+                headers:
+                {
+                    Authorization: 'Bearer ' + tokenGerado,
+                    'Content-Type': 'application/json'
+                },
+                json: true
+            };
+
+            if (pnRecebido.length < 3) {
+                eoSaleRetornado = 'Part number inválido.';
+                callback(eoSaleRetornado);
+            } else {
+                request(options, function (error, response, body) {
+                    if (error) {
+                        console.log('###### Error API EOSale -> ' + error);
+                    } else {
+                        var dataEoSale = body.EOXRecord[0].EndOfSaleDate.value;
+                        var dataEoSupport = body.EOXRecord[0].LastDateOfSupport.value;
+                        var linkreferencia = body.EOXRecord[0].LinkToProductBulletinURL;
+                        if (dataEoSale == "") {
+                            eoSaleRetornado = 'Não há informações de End-of-Sale para o part number informado.';
+                        } else {
+                            var parteSale = dataEoSale.split('-');
+                            eoSaleRetornado = parteSale[2] + '/' + parteSale[1] + '/' + parteSale[0];
+
+                            var parteSup = dataEoSupport.split('-');
+                            eoSupRetornado = parteSup[2] + '/' + parteSup[1] + '/' + parteSup[0];
+                        }
+                        callback(eoSaleRetornado, eoSupRetornado, linkreferencia);
+                    }
+                });
+            }
+        });
+    }
+}
+
+//devolve as informações sobre o serial informado e sobre o contrato de suporte
+function consultarInfoContrato(serialRecebido, callback) {
+    if (globalID == 6) {
+        var tokenGerado = geraToken(function (tokenGerado) {
+            var pnRetornado;
+            var descricaoRetornado;
+            var statusRetornado;
+            var dataFinalRetornada;
+            var options = {
+                method: 'GET',
+                url: 'https://api.cisco.com/product/v1.0/coverage/summary/serial_numbers/' + serialRecebido,
+                headers:
+                {
+                    Authorization: 'Bearer ' + tokenGerado,
+                    'Content-Type': 'application/json'
+                },
+                json: true
+            };
+            request(options, function (error, response, body) {
+                if (error) {
+                    console.log('###### Error API EOSale -> ' + error);
+                } else {
+
+                   /* _.forEach(body, function(item) {
+                        console.log(item);
+                    }) */
+
+                    pnRetornado = body.serial_numbers[0].orderable_pid_list[0].orderable_pid;
+                    descricaoRetornado = body.serial_numbers[0].orderable_pid_list[0].item_description;
+                    statusRetornado = body.serial_numbers[0].is_covered;
+                    var datafinal = body.serial_numbers[0].coverage_end_date;
+
+                    var parteDataFinal = datafinal.split('-');
+                    dataFinalRetornada = parteDataFinal[2] + '/' + parteDataFinal[1] + '/' + parteDataFinal[0];
+
+                    if (pnRetornado == "") {
+                        pnRetornado = 'Não há informações sobre o serial informado.';
+                    } else if (statusRetornado == 'YES') {
+                        statusRetornado = 'Sim';
+                    } else if (statusRetornado == 'NO') { 
+                        statusRetornado = 'Não';
+                    }
+
+                    callback(pnRetornado, descricaoRetornado, statusRetornado, dataFinalRetornada);
+                }
+            });
+
+        });
+    }
 }
 
 //easter egg 1
 controller.hears(['Trouxa'], 'direct_message,direct_mention', function (bot, message) {
     var verificaUser = message.user;
     if (verificaUser.match(/@2s.com.br/)) {
+        console.log('Severino falou -> ' + "Você que é");
         bot.reply(message, "Você que é");
     } else {
+        console.log('Severino falou -> ' + "Hey humano!\n\nVocê parece ser uma pessoa super legal, mas eu só estou autorizado a falar com o pessoal da 2S.\n\nDesculpe :/");
         bot.reply(message, "Hey humano!\n\nVocê parece ser uma pessoa super legal, mas eu só estou autorizado a falar com o pessoal da 2S.\n\nDesculpe :/");
     }
 });
@@ -400,24 +604,29 @@ controller.hears(['Trouxa'], 'direct_message,direct_mention', function (bot, mes
 controller.hears(['Inovações'], 'direct_message,direct_mention', function (bot, message) {
     var verificaUser = message.user;
     if (verificaUser.match(/@2s.com.br/)) {
-        bot.reply(message, "É a empresa onde eu trabalho :D\n\nFocada em tecnologia Cisco, fundada em 1992 e ano passado comemorou 25 anos!!\n\nPedrão, não esquece meu salário!\n\nVoto Carneiro para presidente o/");
+        console.log('Severino falou -> ' + "É a empresa onde eu trabalho :D\n\nFocada em tecnologia Cisco, fundada em 1992 e que em 2017 comemorou 25 anos!!\n\nPedrão, não esquece meu salário!\n\nVoto Carneiro para presidente o/");
+        bot.reply(message, "É a empresa onde eu trabalho :D\n\nFocada em tecnologia Cisco, fundada em 1992 e que em 2017 comemorou 25 anos!!\n\nPedrão, não esquece meu salário!\n\nVoto Carneiro para presidente o/");
     } else {
+        console.log('Severino falou -> ' + "Hey humano!\n\nVocê parece ser uma pessoa super legal, mas eu só estou autorizado a falar com o pessoal da 2S.\n\nDesculpe :/");
         bot.reply(message, "Hey humano!\n\nVocê parece ser uma pessoa super legal, mas eu só estou autorizado a falar com o pessoal da 2S.\n\nDesculpe :/");
     }
 });
 
 //easter egg 3
 controller.hears(['Quem é sua mãe?'], 'direct_message,direct_mention', function (bot, message) {
+    console.log('Severino falou -> ' + "Minha criadora se chama Bruna Toledo ;)");
     bot.reply(message, "Minha criadora se chama Bruna Toledo ;)");
 });
 
 //easter egg 4
 controller.hears(['Severino'], 'direct_message,direct_mention', function (bot, message) {
+    console.log('Severino falou -> ' + "Tò aquiiiii");
     bot.reply(message, "Tò aquiiiii");
 });
 
 //easter egg 5
 controller.hears(['Marcelão'], 'direct_message,direct_mention', function (bot, message) {
+    console.log('Severino falou -> ' + "Isso é uma bichoooooooooona");
     bot.reply(message, "Isso é uma bichoooooooooona");
 });
 
@@ -437,14 +646,83 @@ controller.hears(['.*'], 'direct_message,direct_mention', function (bot, message
                     case auxPedido = 12:
                         qtdCafePedido = message.text;
                         auxPedido = 13;
-                        bot.reply(message, "Quantas águas deseja? *Responda apenas o número por favor, caso não precise, digite 0*");
+                        console.log('Severino falou -> ' + "Quantas águas deseja? *Responda com um número ou com uma jarra, caso não precise, digite 0.*");
+                        bot.reply(message, "Quantas águas deseja? *Responda com um número ou com uma jarra, caso não precise, digite 0.*");
                         break;
 
                     case auxPedido = 13:
                         qtdAguaPedido = message.text;
-                        frasePedido = "      - Local: " + localPedido + "\n      - Tipo de reunião: " + tipoPessoaPedido + "\n      - Cafés: " + qtdCafePedido + "\n      - Águas: " + qtdAguaPedido
+                        frasePedido = "      - Local: " + localPedido + "\n      - Tipo de reunião: " + tipoPessoaPedido + "\n      - Cafés: " + qtdCafePedido + "\n      - Águas: " + qtdAguaPedido;
+                        console.log('Severino falou -> ' + "Revise seu pedido:\n\n- Local: " + localPedido + "\n- Tipo de reunião: " + tipoPessoaPedido + "\n- Cafés: " + qtdCafePedido + "\n- Águas: " + qtdAguaPedido + "\n\nVocê confirma o pedido? *[Sim/Não]*");
                         bot.reply(message, "Revise seu pedido:\n\n- Local: " + localPedido + "\n- Tipo de reunião: " + tipoPessoaPedido + "\n- Cafés: " + qtdCafePedido + "\n- Águas: " + qtdAguaPedido + "\n\nVocê confirma o pedido? *[Sim/Não]*");
                         break;
+                }
+            } else if (auxContato > 0) {
+                switch (auxContato) {
+
+                    //cases do contato 
+                    case auxContato = 21:
+                        console.log('*** Nome digitado pelo usuário: ' + botOuviu);
+                        consultarContato(botOuviu, function (contatoRetornado) {
+                            console.log('Severino falou -> ' + contatoRetornado);
+                            bot.reply(message, contatoRetornado);
+                        });
+                }
+            } else if (auxContratoEoX > 0) {
+                if (auxContratoEoX != 31) {
+                    switch (auxContratoEoX) {
+
+                        //cases para as ações do contrato e eox
+                        case auxContratoEoX = 32:
+                            console.log('*** Part number digitado pelo usuário: ' + botOuviu);
+                            consultarEOX(botOuviu, function (eoSaleInfo, eoSupInfo, linkInfo) {
+                                if (eoSaleInfo.match(/Não há informações/)) {
+                                    console.log('Severino falou -> ' + eoSaleInfo);
+                                    bot.reply(message, eoSaleInfo);
+                                } else if (eoSaleInfo.match(/inválido/)) {
+                                    console.log('Severino falou -> ' + eoSaleInfo);
+                                    bot.reply(message, eoSaleInfo);
+                                } else {
+                                    console.log('Severino falou -> ' + "* End-of Sale: " + eoSaleInfo + "\n\n* End-of-Support:  " + eoSupInfo + "\n\n* Link Referência: " + linkInfo);
+                                    bot.reply(message, "* End-of Sale: " + eoSaleInfo + "\n\n* End-of-Support:  " + eoSupInfo + "\n\n* Link Referência: " + linkInfo);
+                                }
+                            });
+                            break;
+
+                        case auxContratoEoX = 33:
+                            console.log('*** Serial number digitado pelo usuário: ' + botOuviu);
+                            consultarInfoContrato(botOuviu, function (pnInfo, descricaoInfo, coberturaInfo, dataFinalInfo) {
+                                if (pnInfo.match(/Não há informações/)) {
+                                    console.log('Severino falou -> ' + pnInfo);
+                                    bot.reply(message, pnInfo);
+                                } else if (coberturaInfo.match(/Não/)) {
+                                    console.log('Severino falou -> ' + "* Part number: " + pnInfo + "\n\n* Descrição: " + descricaoInfo + "\n\n* Está coberto? " + coberturaInfo);
+                                    bot.reply(message, "* Part number: " + pnInfo + "\n\n* Descrição: " + descricaoInfo + "\n\n* Está coberto? " + coberturaInfo);
+                                } else {
+                                    console.log('Severino falou -> ' + "* Part number: " + pnInfo + "\n\n* Descrição: " + descricaoInfo + "\n\n* Está coberto? " + coberturaInfo + "\n\n* Último dia de cobertura: " + dataFinalInfo);
+                                    bot.reply(message, "* Part number: " + pnInfo + "\n\n* Descrição: " + descricaoInfo + "\n\n* Está coberto? " + coberturaInfo + "\n\n* Último dia de cobertura: " + dataFinalInfo);
+                                }
+                            });
+                            break;
+                    }
+                } else {
+                    switch (botOuviu) {
+
+                        //cases do menu do contrato e eox
+                        case '1':
+                            console.log('########## ouvi 1 -> End-of-Sale e End-of-Support');
+                            auxContratoEoX = 32;
+                            console.log('Severino falou -> ' + "*Para sair da consulta, digite 'menu'*\n\nPor favor informe o part number completo do equipamento.");
+                            bot.reply(message, "*Para sair da consulta, digite 'menu'*\n\nPor favor informe o part number completo do equipamento.");
+                            break;
+
+                        case '2':
+                            console.log('########## ouvi 2 -> Informações e cobertura via serial number');
+                            auxContratoEoX = 33;
+                            console.log('Severino falou -> ' + "*Para sair da consulta, digite 'menu'*\n\nPor favor informe o serial number do equipamento.");
+                            bot.reply(message, "*Para sair da consulta, digite 'menu'*\n\nPor favor informe o serial number do equipamento.");
+                            break;
+                    }
                 }
             } else {
                 switch (botOuviu) {
@@ -453,29 +731,56 @@ controller.hears(['.*'], 'direct_message,direct_mention', function (bot, message
                     case '1':
                         console.log('########## ouvi 1 -> Criar Guest');
                         globalID = 1;
+                        console.log('Severino falou -> ' + "Por favor digite apenas o e-mail do convidado.");
                         bot.reply(message, "Por favor digite apenas o e-mail do convidado.");
                         break;
 
                     case '2':
                         console.log('########## ouvi 2 -> Pedir Café');
                         globalID = 2;
-                        bot.reply(message, "Entendido, por favor responda o questionário a seguir: \n\n1) Onde você está? *Exemplo: sala do Carneiro, sala de reuniões, lounge...*");
+                        console.log('Severino falou -> ' + "Entendido, por favor responda o questionário a seguir: \n\nOnde você está? *Exemplo: sala do Carneiro, sala de reuniões, lounge...*");
+                        bot.reply(message, "Entendido, por favor responda o questionário a seguir: \n\nOnde você está? *Exemplo: sala do Carneiro, sala de reuniões, lounge...*");
                         break;
 
                     case '3':
                         console.log('########## ouvi 3 -> Cotação Dólar');
                         globalID = 3;
                         pegarDolar(function (valorDolar) {
-                            bot.reply(message, "O valor do dólar comercial nesse momento é de R$ " + Math.round(valorDolar * 100) / 100);
-                            bot.reply(message, "*Essa cotação é informativa. Para uso em propostas comerciais e assuntos oficiais da 2S entre em contato com nosso time financeiro*");
+                            console.log('Severino falou -> ' + "O valor do dólar comercial nesse momento é de R$ " + Math.round(valorDolar * 100) / 100);
+                            bot.reply(message, "O valor do dólar comercial nesse momento é de R$ " + Math.round(valorDolar * 100) / 100) + ".";
+                            bot.reply(message, "*Essa cotação é informativa. Para uso em propostas comerciais e assuntos oficiais da 2S entre em contato com nosso time financeiro.*");
                         });
+                        break;
+
+                    case '4':
+                        console.log('########## ouvi 4 -> Endereço VPN');
+                        globalID = 4;
+                        console.log('Severino falou -> ' + "O endereço é: *vpn.2s.com.br:8443*.");
+                        bot.reply(message, "O endereço é: *vpn.2s.com.br:8443*. ");
+                        break;
+
+                    case '5':
+                        console.log('########## ouvi 5 -> Lista de contatos');
+                        auxContato = 21;
+                        globalID = 5;
+                        console.log('Severino falou -> ' + "Por favor me informe o nome do contato que deseja buscar informações. *Não precisa colocar acentos*");
+                        bot.reply(message, "Por favor me informe o nome do contato que deseja buscar informações. *Não precisa colocar acentos*");
+                        break;
+
+                    case '6':
+                        console.log('########## ouvi 6 -> Consultar coberturas e EoX');
+                        auxContratoEoX = 31;
+                        globalID = 6;
+                        console.log('Severino falou -> ' + "Escolha o número correspondente ao que deseja verificar: \n\n1 - End-of-Sale e End-of-Support\n\n2 - Informações e cobertura via serial number");
+                        bot.reply(message, "Escolha o número correspondente ao que deseja verificar: \n\n1 - End-of-Sale e End-of-Support\n\n2 - Informações e cobertura via serial number");
                         break;
                 }
             }
         }
     } else {
+        console.log('Severino falou -> ' + "Hey humano!\n\nVocê parece ser uma pessoa super legal, mas eu só estou autorizado a falar com o pessoal da 2S.\n\nDesculpe :/");
         bot.reply(message, "Hey humano!\n\nVocê parece ser uma pessoa super legal, mas eu só estou autorizado a falar com o pessoal da 2S.\n\nDesculpe :/");
     }
 });
 
-//ACCESS_TOKEN=ZGY2ZjVlMGQtZmJiZi00MzliLWFhMjEtYjEwYzgzOTlkYzIwZGQ3NDQzODEtNWUz PUBLIC_URL=http://8f42bb72.ngrok.io node main.js
+//ACCESS_TOKEN=ZGY2ZjVlMGQtZmJiZi00MzliLWFhMjEtYjEwYzgzOTlkYzIwZGQ3NDQzODEtNWUz PUBLIC_URL=http://161d83f2.ngrok.io node main.js
