@@ -14,6 +14,7 @@ var auxPedido = 0
 var auxContato = 0;
 var auxContratoEoX = 0;
 var frasePedido;
+var menuContato;
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
 if (!accessToken) {
@@ -116,31 +117,31 @@ controller.hears(['Olá', 'Opa', 'Ola', 'Oi', 'Salve'], 'direct_message,direct_m
         } else if (auxContratoEoX == 32) {
             var botOuviuLocal = message.text;
             console.log('*** Part number digitado pelo usuário: ' + botOuviuLocal);
-            consultarEOX(botOuviuLocal, function (eoSaleInfo, eoSupInfo, linkInfo) {
+            consultarEOX(botOuviuLocal, function (pnInfo, eoSaleInfo, eoSupInfo, linkInfo) {
                 if (eoSaleInfo.match(/Não há informações/)) {
                     console.log('Severino falou -> ' + eoSaleInfo);
-                    bot.reply(message, eoSaleInfo);
+                    bot.reply(message, "* Part Number: " + pnInfo + "\n\n* " + eoSaleInfo);
                 } else if (eoSaleInfo.match(/inválido/)) {
                     console.log('Severino falou -> ' + eoSaleInfo);
                     bot.reply(message, eoSaleInfo);
                 } else {
-                    console.log('Severino falou -> ' + "* End-of Sale: " + eoSaleInfo + "\n\n* End-of-Support:  " + eoSupInfo + "\n\n* Link Referência: " + linkInfo);
-                    bot.reply(message, "* End-of Sale: " + eoSaleInfo + "\n\n* End-of-Support:  " + eoSupInfo + "\n\n* Link Referência: " + linkInfo);
+                    console.log('127 Severino falou -> ' + "* Part Number: " + pnInfo + "\n\n* End-of-Sale: " + eoSaleInfo + "\n\n* End-of-Support:  " + eoSupInfo + "\n\n* Link Referência: " + linkInfo);
+                    bot.reply(message, "* Part Number: " + pnInfo + "\n\n* End-of-Sale: " + eoSaleInfo + "\n\n* End-of-Support:  " + eoSupInfo + "\n\n* Link Referência: " + linkInfo);
                 }
             });
         } else if (auxContratoEoX == 33) {
             var botOuviuLocal = message.text;
             console.log('*** Serial number digitado pelo usuário: ' + botOuviuLocal);
-            consultarInfoContrato(botOuviuLocal, function (pnInfo, descricaoInfo, coberturaInfo, dataFinalInfo) {
+            consultarInfoContrato(botOuviuLocal, function (serialInfo, pnInfo, descricaoInfo, coberturaInfo, dataFinalInfo) {
                 if (pnInfo.match(/Não há informações/)) {
-                    console.log('Severino falou -> ' + pnInfo);
-                    bot.reply(message, pnInfo);
+                    console.log('Severino falou -> ' + "* Serial Number: " + serialInfo + pnInfo);
+                    bot.reply(message, "* Serial Number: " + serialInfo + "\n\n* " + pnInfo);
                 } else if (coberturaInfo.match(/Não/)) {
-                    console.log('Severino falou -> ' + "* Part number: " + pnInfo + "\n\n* Descrição: " + descricaoInfo + "\n\n* Está coberto? " + coberturaInfo);
-                    bot.reply(message, "* Part number: " + pnInfo + "\n\n* Descrição: " + descricaoInfo + "\n\n* Está coberto? " + coberturaInfo);
+                    console.log('Severino falou -> ' + "* Serial number: " + serialInfo + "\n\n* Part number: " + pnInfo + "\n\n* Descrição: " + descricaoInfo + "\n\n* Está coberto? " + coberturaInfo);
+                    bot.reply(message, "* Serial number: " + serialInfo + "\n\n* Part number: " + pnInfo + "\n\n* Descrição: " + descricaoInfo + "\n\n* Está coberto? " + coberturaInfo);
                 } else {
-                    console.log('Severino falou -> ' + "* Part number: " + pnInfo + "\n\n* Descrição: " + descricaoInfo + "\n\n* Está coberto? " + coberturaInfo + "\n\n* Último dia de cobertura: " + dataFinalInfo);
-                    bot.reply(message, "* Part number: " + pnInfo + "\n\n* Descrição: " + descricaoInfo + "\n\n* Está coberto? " + coberturaInfo + "\n\n* Último dia de cobertura: " + dataFinalInfo);
+                    console.log('Severino falou -> ' + "* Serial number: " + serialInfo + "\n\n* Part number: " + pnInfo + "\n\n* Descrição: " + descricaoInfo + "\n\n* Está coberto? " + coberturaInfo + "\n\n* Último dia de cobertura: " + dataFinalInfo);
+                    bot.reply(message, "* Serial number: " + serialInfo + "\n\n* Part number: " + pnInfo + "\n\n* Descrição: " + descricaoInfo + "\n\n* Está coberto? " + coberturaInfo + "\n\n* Último dia de cobertura: " + dataFinalInfo);
                 }
             });
         } else {
@@ -148,8 +149,8 @@ controller.hears(['Olá', 'Opa', 'Ola', 'Oi', 'Salve'], 'direct_message,direct_m
             auxPedido = 0;
             auxContratoEoX = 0;
             globalID = 0;
-            console.log('Severino falou -> ' + "Oi humano!\n\nPor favor digite o número correspondente ao que deseja :)\n\n1 - Criar acesso Guest Wi-Fi\n\n2 - Pedir um café para seus convidados\n\n3 - Consultar a cotação do dólar\n\n4 - Mostrar o endereço da VPN 2S\n\n5 - Consultar contato da 2S\n\n6 - Verificar coberturas e EoX\n\n\n*-- Para ver o menu novamente, basta digitar 'menu' --*");
-            bot.reply(message, "Oi humano!\n\nPor favor digite o número correspondente ao que deseja :)\n\n1 - Criar acesso Guest Wi-Fi\n\n2 - Pedir um café para seus convidados\n\n3 - Consultar a cotação do dólar\n\n4 - Mostrar o endereço da VPN 2S\n\n5 - Consultar contato da 2S\n\n6 - Verificar coberturas e EoX\n\n\n*-- Para ver o menu novamente, basta digitar 'menu' --*");
+            console.log('Severino falou -> ' + "Oi humano!\n\nPor favor digite o número correspondente ao que deseja :)\n\n1 - Criar acesso Guest Wi-Fi\n\n2 - Pedir um café para seus convidados\n\n3 - Consultar a cotação do dólar\n\n4 - Mostrar o endereço da VPN 2S\n\n5 - Consultar contato da 2S ou Cisco\n\n6 - Verificar coberturas e EoX\n\n\n*-- Para ver o menu novamente, basta digitar 'menu' --*");
+            bot.reply(message, "Oi humano!\n\nPor favor digite o número correspondente ao que deseja :)\n\n1 - Criar acesso Guest Wi-Fi\n\n2 - Pedir um café para seus convidados\n\n3 - Consultar a cotação do dólar\n\n4 - Mostrar o endereço da VPN 2S\n\n5 - Consultar contato da 2S ou Cisco\n\n6 - Verificar coberturas e EoX\n\n\n*-- Para ver o menu novamente, basta digitar 'menu' --*");
         }
     } else {
         console.log('Severino falou -> ' + "Hey humano!\n\nVocê parece ser uma pessoa super legal, mas eu só estou autorizado a falar com o pessoal da 2S.\n\nDesculpe :/");
@@ -167,8 +168,8 @@ controller.hears(['Menu'], 'direct_message,direct_mention', function (bot, messa
             auxPedido = 0;
             auxContratoEoX = 0;
             globalID = 0;
-            console.log('Severino falou -> ' + "Por favor digite o número correspondente ao que deseja :)\n\n1 - Criar acesso Guest Wi-Fi\n\n2 - Pedir um café para seus convidados\n\n3 - Consultar a cotação do dólar\n\n4 - Mostrar o endereço da VPN 2S\n\n5 - Consultar contato da 2S\n\n6 - Verificar coberturas e EoX");
-            bot.reply(message, "Por favor digite o número correspondente ao que deseja :)\n\n1 - Criar acesso Guest Wi-Fi\n\n2 - Pedir um café para seus convidados\n\n3 - Consultar a cotação do dólar\n\n4 - Mostrar o endereço da VPN 2S\n\n5 - Consultar contato da 2S\n\n6 - Verificar coberturas e EoX");
+            console.log('Severino falou -> ' + "Por favor digite o número correspondente ao que deseja :)\n\n1 - Criar acesso Guest Wi-Fi\n\n2 - Pedir um café para seus convidados\n\n3 - Consultar a cotação do dólar\n\n4 - Mostrar o endereço da VPN 2S\n\n5 - Consultar contato da 2S ou Cisco\n\n6 - Verificar coberturas e EoX");
+            bot.reply(message, "Por favor digite o número correspondente ao que deseja :)\n\n1 - Criar acesso Guest Wi-Fi\n\n2 - Pedir um café para seus convidados\n\n3 - Consultar a cotação do dólar\n\n4 - Mostrar o endereço da VPN 2S\n\n5 - Consultar contato da 2S ou Cisco\n\n6 - Verificar coberturas e EoX");
         }
     } else {
         console.log('Severino falou -> ' + "Hey humano!\n\nVocê parece ser uma pessoa super legal, mas eu só estou autorizado a falar com o pessoal da 2S.\n\nDesculpe :/");
@@ -321,8 +322,8 @@ controller.hears(['Sim', 'Confirmo'], 'direct_message,direct_mention', function 
     }
 });
 
-// Responde a agradecimentos 
-controller.hears(['Obrigada', 'Obrigado', 'Valeu', 'Vlw', 'Thanks', 'Grato'], 'direct_message,direct_mention', function (bot, message) {
+// Responde a agradecimentos  
+controller.hears(['Obrigada', 'Obrigado', 'Valeu', 'Thanks', 'Grato'], 'direct_message,direct_mention', function (bot, message) {
     var verificaUser = message.user;
     if (verificaUser.match(/@2s.com.br/) || verificaUser.match(/@webex.bot/)) {
         globalID = 0;
@@ -421,22 +422,21 @@ function pegarDolar(callback) {
     }
 }
 
-//traz informações sobre o contato escolhido
-function consultarContato(nomeRecebido, callback) {
-    if (globalID == 5) {
+//traz informações sobre o contato escolhido da 2S
+function consultarContato2S(nomeRecebido, callback) {
+    if (globalID == 5 && menuContato == 1) {
         var XLSX = require('xlsx');
         var workbook = XLSX.readFile('Contatos2S.xlsx');
         var sheet_name_list = workbook.SheetNames;
-        var listaCompleta = XLSX.utils.sheet_to_json(workbook.Sheets[sheet_name_list[0]]);
+        var listaCompleta2S = XLSX.utils.sheet_to_json(workbook.Sheets[sheet_name_list[0]]);
         var resposta = '';
 
         auxContato = 0;
         auxPedido = 0;
 
-        //console.log(listaCompleta);
         console.log('######### Nome que vai ser filtrado -> ' + nomeRecebido);
 
-        var itemfiltrado = _.filter(listaCompleta, function (item) {
+        var itemfiltrado = _.filter(listaCompleta2S, function (item) {
             var nomeItemFormatted = item.Nome.toUpperCase();
             var nomeRecebidoFormatted = nomeRecebido.toUpperCase();
 
@@ -455,6 +455,41 @@ function consultarContato(nomeRecebido, callback) {
         callback(resposta);
     }
 }
+
+//traz informações sobre o contato escolhido da Cisco
+function consultarContatoCisco(nomeRecebido, callback) {
+    if (globalID == 5 && menuContato == 2) {
+        var XLSX = require('xlsx');
+        var workbook = XLSX.readFile('Contatos2S.xlsx');
+        var sheet_name_list = workbook.SheetNames;
+        var listaCompleta2S = XLSX.utils.sheet_to_json(workbook.Sheets[sheet_name_list[1]]);
+        var resposta = '';
+
+        auxContato = 0;
+        auxPedido = 0;
+
+        console.log('######### Nome que vai ser filtrado -> ' + nomeRecebido);
+
+        var itemfiltrado = _.filter(listaCompleta2S, function (item) {
+            var nomeItemFormatted = item.Nome.toUpperCase();
+            var nomeRecebidoFormatted = nomeRecebido.toUpperCase();
+
+            if (nomeItemFormatted.indexOf(nomeRecebidoFormatted) > -1) {
+                return item
+            }
+        });
+
+        if (itemfiltrado.length > 0) {
+            _.forEach(itemfiltrado, function (item) {
+                resposta += "- Nome: " + item.Nome + " - E-mail: " + item.email + " - Ramal: " + item.Ramal + " - Celular: " + item.Celular + " \n\n";
+            });
+        } else {
+            resposta = "Não encontrei nenhum registro desse nome :(\n\nDigite 'menu' para começar de novo.";
+        }
+        callback(resposta);
+    }
+}
+
 
 //gera o token para as chamadas da API Cisco
 function geraToken(callback) {
@@ -480,7 +515,6 @@ function geraToken(callback) {
 
         request(options, function (error, response, body) {
             body = JSON.parse(body);
-            //console.log('###### Body Token -> ' + JSON.stringify(body));
             if (error) {
                 console.log('###### Error API Token -> ' + error);
             } else {
@@ -496,6 +530,13 @@ function geraToken(callback) {
 function consultarEOX(pnRecebido, callback) {
     if (globalID == 6) {
         var tokenGerado = geraToken(function (tokenGerado) {
+            auxContato = 0;
+            auxPedido = 0;
+            auxContratoEoX = 0;
+            var dataEoSale;
+            var dataEoSupport;
+            var linkRetornado;
+            var pnRetornado;
             var eoSaleRetornado;
             var eoSupRetornado;
             var options = {
@@ -517,19 +558,36 @@ function consultarEOX(pnRecebido, callback) {
                     if (error) {
                         console.log('###### Error API EOSale -> ' + error);
                     } else {
-                        var dataEoSale = body.EOXRecord[0].EndOfSaleDate.value;
-                        var dataEoSupport = body.EOXRecord[0].LastDateOfSupport.value;
-                        var linkreferencia = body.EOXRecord[0].LinkToProductBulletinURL;
-                        if (dataEoSale == "") {
-                            eoSaleRetornado = 'Não há informações de End-of-Sale para o part number informado.';
-                        } else {
-                            var parteSale = dataEoSale.split('-');
-                            eoSaleRetornado = parteSale[2] + '/' + parteSale[1] + '/' + parteSale[0];
-
-                            var parteSup = dataEoSupport.split('-');
-                            eoSupRetornado = parteSup[2] + '/' + parteSup[1] + '/' + parteSup[0];
+                        var listItem = [];
+                        if (body.EOXRecord != undefined && body.EOXRecord != null) {
+                            _.forEach(body.EOXRecord, function (item) {
+                                var itemToAdd = {};
+                                itemToAdd.productID = item.EOXInputValue;
+                                itemToAdd.eosDate = item.EndOfSaleDate.value;
+                                itemToAdd.ldSup = item.LastDateOfSupport.value;
+                                itemToAdd.linkProduct = item.LinkToProductBulletinURL;
+                                listItem.push(itemToAdd);
+                            });
                         }
-                        callback(eoSaleRetornado, eoSupRetornado, linkreferencia);
+                        console.log('listitem ########### ' + JSON.stringify(listItem));
+
+                        listItem.forEach(function (element) {
+                            pnRetornado = element.productID;
+                            dataEoSale = element.eosDate;
+                            dataEoSupport = element.ldSup;
+                            linkRetornado = element.linkProduct;
+
+                            if (dataEoSale == "") {
+                                eoSaleRetornado = 'Não há informações de End-of-Sale';
+                            } else {
+                                var parteSale = dataEoSale.split('-');
+                                eoSaleRetornado = parteSale[2] + '/' + parteSale[1] + '/' + parteSale[0];
+
+                                var parteSup = dataEoSupport.split('-');
+                                eoSupRetornado = parteSup[2] + '/' + parteSup[1] + '/' + parteSup[0];
+                            }
+                            callback(pnRetornado, eoSaleRetornado, eoSupRetornado, linkRetornado);
+                        });
                     }
                 });
             }
@@ -541,6 +599,10 @@ function consultarEOX(pnRecebido, callback) {
 function consultarInfoContrato(serialRecebido, callback) {
     if (globalID == 6) {
         var tokenGerado = geraToken(function (tokenGerado) {
+            auxContato = 0;
+            auxPedido = 0;
+            auxContratoEoX = 0;
+            var serialRetornado;
             var pnRetornado;
             var descricaoRetornado;
             var statusRetornado;
@@ -559,31 +621,46 @@ function consultarInfoContrato(serialRecebido, callback) {
                 if (error) {
                     console.log('###### Error API EOSale -> ' + error);
                 } else {
-
-                   /* _.forEach(body, function(item) {
-                        console.log(item);
-                    }) */
-
-                    pnRetornado = body.serial_numbers[0].orderable_pid_list[0].orderable_pid;
-                    descricaoRetornado = body.serial_numbers[0].orderable_pid_list[0].item_description;
-                    statusRetornado = body.serial_numbers[0].is_covered;
-                    var datafinal = body.serial_numbers[0].coverage_end_date;
-
-                    var parteDataFinal = datafinal.split('-');
-                    dataFinalRetornada = parteDataFinal[2] + '/' + parteDataFinal[1] + '/' + parteDataFinal[0];
-
-                    if (pnRetornado == "") {
-                        pnRetornado = 'Não há informações sobre o serial informado.';
-                    } else if (statusRetornado == 'YES') {
-                        statusRetornado = 'Sim';
-                    } else if (statusRetornado == 'NO') { 
-                        statusRetornado = 'Não';
+                    var listItem = [];
+                    if (body.serial_numbers != undefined && body.serial_numbers != null) {
+                        _.forEach(body.serial_numbers, function (item) {
+                            var itemToAdd = {};
+                            itemToAdd.srNo = item.sr_no;
+                            itemToAdd.orderablePid = item.orderable_pid_list[0].orderable_pid;
+                            itemToAdd.itemDescription = item.orderable_pid_list[0].item_description;
+                            itemToAdd.isCovered = item.is_covered;
+                            itemToAdd.coverageEndDate = item.coverage_end_date;
+                            listItem.push(itemToAdd);
+                        });
                     }
+                    console.log('listitem ' + JSON.stringify(listItem));
 
-                    callback(pnRetornado, descricaoRetornado, statusRetornado, dataFinalRetornada);
+                    //listItem = JSON.parse(JSON.stringify(listItem));
+                    listItem.forEach(function (element) {
+                        serialRetornado = element.srNo;
+                        pnRetornado = element.orderablePid;
+                        descricaoRetornado = element.itemDescription;
+                        statusRetornado = element.isCovered;
+                        var dataFinal = element.coverageEndDate;
+
+
+                        console.log('pnretornado -> ' + pnRetornado);
+
+                        var parteDataFinal = dataFinal.split('-');
+                        dataFinalRetornada = parteDataFinal[2] + '/' + parteDataFinal[1] + '/' + parteDataFinal[0];
+
+                        if (pnRetornado == "") {
+                            pnRetornado = 'Não há informações sobre o serial informado';
+                        } else if (statusRetornado == 'YES') {
+                            statusRetornado = 'Sim';
+                        } else if (statusRetornado == 'NO') {
+                            statusRetornado = 'Não';
+                        }
+
+                        callback(serialRetornado, pnRetornado, descricaoRetornado, statusRetornado, dataFinalRetornada);
+                    });
                 }
             });
-
         });
     }
 }
@@ -662,11 +739,27 @@ controller.hears(['.*'], 'direct_message,direct_mention', function (bot, message
 
                     //cases do contato 
                     case auxContato = 21:
-                        console.log('*** Nome digitado pelo usuário: ' + botOuviu);
-                        consultarContato(botOuviu, function (contatoRetornado) {
-                            console.log('Severino falou -> ' + contatoRetornado);
-                            bot.reply(message, contatoRetornado);
-                        });
+                        auxContato = 22;
+                        menuContato = message.text;
+                        console.log('Severino falou -> ' + "Por favor me informe o nome do contato que deseja buscar informações. **Não precisa colocar acentos**");
+                        bot.reply(message, "Por favor me informe o nome do contato que deseja buscar informações. **Não precisa colocar acentos**");
+                        break;
+
+                    case auxContato = 22:
+                        if (menuContato == '1') {
+                            console.log('*** Nome digitado pelo usuário: ' + botOuviu);
+                            consultarContato2S(botOuviu, function (contatoRetornado) {
+                                console.log('Severino falou -> ' + contatoRetornado);
+                                bot.reply(message, contatoRetornado);
+                            });
+                        } else if (menuContato == '2') {
+                            console.log('*** Nome digitado pelo usuário: ' + botOuviu);
+                            consultarContatoCisco(botOuviu, function (contatoRetornado) {
+                                console.log('Severino falou -> ' + contatoRetornado);
+                                bot.reply(message, contatoRetornado);
+                            })
+                        }
+                        break;
                 }
             } else if (auxContratoEoX > 0) {
                 if (auxContratoEoX != 31) {
@@ -675,32 +768,33 @@ controller.hears(['.*'], 'direct_message,direct_mention', function (bot, message
                         //cases para as ações do contrato e eox
                         case auxContratoEoX = 32:
                             console.log('*** Part number digitado pelo usuário: ' + botOuviu);
-                            consultarEOX(botOuviu, function (eoSaleInfo, eoSupInfo, linkInfo) {
+                            consultarEOX(botOuviu, function (pnInfo, eoSaleInfo, eoSupInfo, linkInfo) {
+                                console.log('Resultados callback -> ' + pnInfo + " " + eoSaleInfo + ' ' + eoSupInfo + ' ' + linkInfo);
                                 if (eoSaleInfo.match(/Não há informações/)) {
                                     console.log('Severino falou -> ' + eoSaleInfo);
-                                    bot.reply(message, eoSaleInfo);
+                                    bot.reply(message, "* Part Number: " + pnInfo + "\n\n* " + eoSaleInfo);
                                 } else if (eoSaleInfo.match(/inválido/)) {
                                     console.log('Severino falou -> ' + eoSaleInfo);
                                     bot.reply(message, eoSaleInfo);
                                 } else {
-                                    console.log('Severino falou -> ' + "* End-of Sale: " + eoSaleInfo + "\n\n* End-of-Support:  " + eoSupInfo + "\n\n* Link Referência: " + linkInfo);
-                                    bot.reply(message, "* End-of Sale: " + eoSaleInfo + "\n\n* End-of-Support:  " + eoSupInfo + "\n\n* Link Referência: " + linkInfo);
+                                    console.log('Severino falou -> ' + "* Part Number: " + pnInfo + "\n\n* End-of-Sale: " + eoSaleInfo + "\n\n* End-of-Support:  " + eoSupInfo + "\n\n* Link Referência: " + linkInfo);
+                                    bot.reply(message, "* Part Number: " + pnInfo + "\n\n* End-of-Sale: " + eoSaleInfo + "\n\n* End-of-Support:  " + eoSupInfo + "\n\n* Link Referência: " + linkInfo);
                                 }
                             });
                             break;
 
                         case auxContratoEoX = 33:
                             console.log('*** Serial number digitado pelo usuário: ' + botOuviu);
-                            consultarInfoContrato(botOuviu, function (pnInfo, descricaoInfo, coberturaInfo, dataFinalInfo) {
+                            consultarInfoContrato(botOuviu, function (serialInfo, pnInfo, descricaoInfo, coberturaInfo, dataFinalInfo) {
                                 if (pnInfo.match(/Não há informações/)) {
-                                    console.log('Severino falou -> ' + pnInfo);
-                                    bot.reply(message, pnInfo);
+                                    console.log('Severino falou -> ' + "* Serial Number: " + serialInfo + pnInfo);
+                                    bot.reply(message, "* Serial Number: " + serialInfo + "\n\n* " + pnInfo);
                                 } else if (coberturaInfo.match(/Não/)) {
-                                    console.log('Severino falou -> ' + "* Part number: " + pnInfo + "\n\n* Descrição: " + descricaoInfo + "\n\n* Está coberto? " + coberturaInfo);
-                                    bot.reply(message, "* Part number: " + pnInfo + "\n\n* Descrição: " + descricaoInfo + "\n\n* Está coberto? " + coberturaInfo);
+                                    console.log('Severino falou -> ' + "* Serial number: " + serialInfo + "\n\n* Part number: " + pnInfo + "\n\n* Descrição: " + descricaoInfo + "\n\n* Está coberto? " + coberturaInfo);
+                                    bot.reply(message, "* Serial number: " + serialInfo + "\n\n* Part number: " + pnInfo + "\n\n* Descrição: " + descricaoInfo + "\n\n* Está coberto? " + coberturaInfo);
                                 } else {
-                                    console.log('Severino falou -> ' + "* Part number: " + pnInfo + "\n\n* Descrição: " + descricaoInfo + "\n\n* Está coberto? " + coberturaInfo + "\n\n* Último dia de cobertura: " + dataFinalInfo);
-                                    bot.reply(message, "* Part number: " + pnInfo + "\n\n* Descrição: " + descricaoInfo + "\n\n* Está coberto? " + coberturaInfo + "\n\n* Último dia de cobertura: " + dataFinalInfo);
+                                    console.log('Severino falou -> ' + "* Serial number: " + serialInfo + "\n\n* Part number: " + pnInfo + "\n\n* Descrição: " + descricaoInfo + "\n\n* Está coberto? " + coberturaInfo + "\n\n* Último dia de cobertura: " + dataFinalInfo);
+                                    bot.reply(message, "* Serial number: " + serialInfo + "\n\n* Part number: " + pnInfo + "\n\n* Descrição: " + descricaoInfo + "\n\n* Está coberto? " + coberturaInfo + "\n\n* Último dia de cobertura: " + dataFinalInfo);
                                 }
                             });
                             break;
@@ -712,15 +806,15 @@ controller.hears(['.*'], 'direct_message,direct_mention', function (bot, message
                         case '1':
                             console.log('########## ouvi 1 -> End-of-Sale e End-of-Support');
                             auxContratoEoX = 32;
-                            console.log('Severino falou -> ' + "*Para sair da consulta, digite 'menu'*\n\nPor favor informe o part number completo do equipamento.");
-                            bot.reply(message, "*Para sair da consulta, digite 'menu'*\n\nPor favor informe o part number completo do equipamento.");
+                            console.log('Severino falou -> ' + "Por favor informe o part number completo do equipamento.");
+                            bot.reply(message, "Por favor informe o **part number completo** do equipamento, para pesquisar vários pns de uma vez, separe-os por vírgulas sem deixar espaços. Ex. ATA190,WS-C2960-24PC-L");
                             break;
 
                         case '2':
                             console.log('########## ouvi 2 -> Informações e cobertura via serial number');
                             auxContratoEoX = 33;
-                            console.log('Severino falou -> ' + "*Para sair da consulta, digite 'menu'*\n\nPor favor informe o serial number do equipamento.");
-                            bot.reply(message, "*Para sair da consulta, digite 'menu'*\n\nPor favor informe o serial number do equipamento.");
+                            console.log('Severino falou -> ' + "Por favor informe o serial number do equipamento.");
+                            bot.reply(message, "Por favor informe o **serial number** do equipamento, para pesquisar vários seriais de uma vez, separe-os por vírgulas sem deixar espaços. Ex. FCH2226VA2J,FXS1643Q25Q");
                             break;
                     }
                 }
@@ -732,7 +826,7 @@ controller.hears(['.*'], 'direct_message,direct_mention', function (bot, message
                         console.log('########## ouvi 1 -> Criar Guest');
                         globalID = 1;
                         console.log('Severino falou -> ' + "Por favor digite apenas o e-mail do convidado.");
-                        bot.reply(message, "Por favor digite apenas o e-mail do convidado.");
+                        bot.reply(message, "Por favor digite apenas o **e-mail** do convidado.");
                         break;
 
                     case '2':
@@ -763,8 +857,8 @@ controller.hears(['.*'], 'direct_message,direct_mention', function (bot, message
                         console.log('########## ouvi 5 -> Lista de contatos');
                         auxContato = 21;
                         globalID = 5;
-                        console.log('Severino falou -> ' + "Por favor me informe o nome do contato que deseja buscar informações. *Não precisa colocar acentos*");
-                        bot.reply(message, "Por favor me informe o nome do contato que deseja buscar informações. *Não precisa colocar acentos*");
+                        console.log('Severino falou -> ' + "Digite o número da opção desejada: " + "\n\n1 - Contato 2S \n\n2 - Contato Cisco");
+                        bot.reply(message, "Digite o número da opção desejada: " + "\n\n1 - Contato 2S \n\n2 - Contato Cisco");
                         break;
 
                     case '6':
@@ -783,4 +877,4 @@ controller.hears(['.*'], 'direct_message,direct_mention', function (bot, message
     }
 });
 
-//ACCESS_TOKEN=ZGY2ZjVlMGQtZmJiZi00MzliLWFhMjEtYjEwYzgzOTlkYzIwZGQ3NDQzODEtNWUz PUBLIC_URL=http://161d83f2.ngrok.io node main.js
+//ACCESS_TOKEN=ZGY2ZjVlMGQtZmJiZi00MzliLWFhMjEtYjEwYzgzOTlkYzIwZGQ3NDQzODEtNWUz PUBLIC_URL=http://db21531a.ngrok.io node main.js
